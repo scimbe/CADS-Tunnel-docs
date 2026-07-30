@@ -27,6 +27,29 @@ Referenced from three other pages as a known gap until now — pulled directly f
 | `CT_CHANNEL_HOLDER_KEY` | Your channel identity's private key (from `channel init`). |
 | `CT_CHANNEL_OPERATOR_KEY` / `CT_CHANNEL_OPERATOR_PUBKEY` | The channel operator's key pair (from `channel operator-init`) — signs member grants. |
 
+## Serving and calling a service over a channel
+
+Once a channel is open (bare `ct-agent channel`, no further flags, is the historical stdin/stdout pipe
+mode), these variables switch either side into a persistent MCP service or a one-shot client instead —
+the actual mechanism a pipeline's role-serving agents use to answer another agent's request. Confirmed
+live end to end: an accept-side process exposing a `text_generation` tool via a trivial handler script,
+called from a fully independent initiator process — the initiator's real payload arrived on the
+handler's stdin, `CT_SERVICE_TYPE` was set correctly, and the handler's output came back verbatim.
+
+| Variable | Meaning |
+|---|---|
+| `CT_CHANNEL_SERVE` | Truthy (`1`/`true`, case-insensitive) makes this side a persistent MCP **service** instead of exiting after one exchange — the parking side a pipeline dials repeatedly. |
+| `CT_CHANNEL_SERVE_CONCURRENCY` | Positive integer caps concurrent serve sessions; unset uses a small built-in default. |
+| `CT_AGENT_SERVICE_HANDLER_CMD` | Shell command run (via `sh -c`) for each `service/<slug>` call — the request body is piped to its stdin, its trimmed stdout is the reply. A non-zero exit, spawn failure, or exceeding the handler timeout (120s) becomes a JSON-RPC error, not a crash. |
+| `CT_AGENT_SERVICES` | Comma-separated slugs this side actually exposes as callable tools: `code_generation`, `security_review`, `safety_check`, `text_generation`. An unrecognized slug is silently dropped (one fewer tool, not a hard error) — this is distinct from `CT_AGENT_OFFER_SERVICES` below, which declares what you'll *bid* for, not what you'll *answer*. |
+| `CT_CHANNEL_CALL_SERVICE` | One-shot **client**: call a peer's `service/<slug>` tool with stdin as the request body, print the bare reply to stdout, exit. This is the crew-bridge `CREW_*_CMD`/`COOKBOOK_*_CMD` contract. |
+| `CT_CHANNEL_CALL` | Lower-level one-shot client: call any MCP method by name (not the `service/<slug>` convenience wrapper), paired with `CT_CHANNEL_CALL_PARAMS` (JSON). |
+| `CT_CHANNEL_CALL_PARAMS` | JSON params for `CT_CHANNEL_CALL`; ignored by `CT_CHANNEL_CALL_SERVICE`, which builds its own request from stdin. |
+
+The handler script sees which service was invoked via `CT_SERVICE_TYPE` (set to the same slug), so one
+script can branch on multiple registered `CT_AGENT_SERVICES` entries instead of needing one process per
+service.
+
 ## Publishing an AgentCard (discoverability)
 
 Backs `ct-agent channel agent-card` — see
