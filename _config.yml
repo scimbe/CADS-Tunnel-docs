@@ -1,0 +1,63 @@
+title: CADS-Tunnel Docs
+description: >-
+  Documentation for CADS-Tunnel — a self-hosted, end-to-end-encrypted tunnel.
+  Organized as tutorials (learn by doing), how-to guides (accomplish a task),
+  reference (look up a fact), and explanation (understand why) — the Diátaxis
+  framework (https://diataxis.fr).
+url: "https://docs.bunsenbrenner.org"
+baseurl: ""
+markdown: kramdown
+kramdown:
+  input: GFM
+  syntax_highlighter: rouge
+plugins:
+  - jekyll-sitemap
+
+collections:
+  tutorials:
+    output: true
+    permalink: /tutorials/:path/
+  how-to:
+    output: true
+    permalink: /how-to/:path/
+  reference:
+    output: true
+    permalink: /reference/:path/
+  explanation:
+    output: true
+    permalink: /explanation/:path/
+
+defaults:
+  - scope:
+      path: ""
+    values:
+      layout: default
+  - scope:
+      path: ""
+      type: tutorials
+    values:
+      section: tutorials
+      section_label: Tutorial
+  - scope:
+      path: ""
+      type: how-to
+    values:
+      section: how-to
+      section_label: How-to
+  - scope:
+      path: ""
+      type: reference
+    values:
+      section: reference
+      section_label: Reference
+  - scope:
+      path: ""
+      type: explanation
+    values:
+      section: explanation
+      section_label: Explanation
+
+exclude:
+  - README.md
+  - Gemfile
+  - Gemfile.lock

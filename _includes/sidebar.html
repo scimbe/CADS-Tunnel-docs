@@ -1,0 +1,26 @@
+<nav class="side">
+ <h4>Tutorials</h4>
+ <ul>
+  {% for p in site.tutorials %}
+  <li><a href="{{ p.url | relative_url }}" {% if page.url == p.url %}class="active"{% endif %}>{{ p.title }}</a></li>
+  {% endfor %}
+ </ul>
+ <h4>How-to guides</h4>
+ <ul>
+  {% for p in site.how-to %}
+  <li><a href="{{ p.url | relative_url }}" {% if page.url == p.url %}class="active"{% endif %}>{{ p.title }}</a></li>
+  {% endfor %}
+ </ul>
+ <h4>Reference</h4>
+ <ul>
+  {% for p in site.reference %}
+  <li><a href="{{ p.url | relative_url }}" {% if page.url == p.url %}class="active"{% endif %}>{{ p.title }}</a></li>
+  {% endfor %}
+ </ul>
+ <h4>Explanation</h4>
+ <ul>
+  {% for p in site.explanation %}
+  <li><a href="{{ p.url | relative_url }}" {% if page.url == p.url %}class="active"{% endif %}>{{ p.title }}</a></li>
+  {% endfor %}
+ </ul>
+</nav>

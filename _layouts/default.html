@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% if page.title %}{{ page.title }} — {% endif %}CADS-Tunnel Docs</title>
+<meta name="description" content="{{ page.description | default: site.description }}">
+<link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}">
+</head><body>
+
+<header class="top">
+ <div class="wrap top-inner">
+  <a class="brand" href="{{ '/' | relative_url }}"><span class="flame"></span>CADS-Tunnel<span class="tld">&nbsp;docs</span></a>
+  <nav class="top-nav">
+   <a href="{{ '/tutorials/' | relative_url }}">Tutorials</a>
+   <a href="{{ '/how-to/' | relative_url }}">How-to</a>
+   <a href="{{ '/reference/' | relative_url }}">Reference</a>
+   <a href="{{ '/explanation/' | relative_url }}">Explanation</a>
+   <a class="btn" href="https://bunsenbrenner.org/">bunsenbrenner.org &rarr;</a>
+   <a class="btn" href="https://github.com/scimbe/CADS-Tunnel">GitHub &rarr;</a>
+  </nav>
+ </div>
+</header>
+
+<div class="wrap layout">
+ {% include sidebar.html %}
+ <main class="content">
+  {% if page.section_label %}<div class="eyebrow">{{ page.section_label }}</div>{% endif %}
+  {{ content }}
+  {% if page.section %}
+  <div class="page-foot">
+   <span>Found an error, or something that didn't work as documented? <a href="https://github.com/scimbe/CADS-Tunnel-docs/issues/new?title={{ page.title | url_encode }}" target="_blank" rel="noopener">Open an issue &rarr;</a></span>
+  </div>
+  {% endif %}
+ </main>
+</div>
+
+<footer class="site-footer">
+ <div class="wrap footer-inner">
+  <div>Part of <a href="https://bunsenbrenner.org/">bunsenbrenner.org</a> — CADS-Tunnel is open source.</div>
+  <div class="legal-links">
+   <a href="https://bunsenbrenner.org/impressum">Impressum</a>
+   <a href="https://bunsenbrenner.org/datenschutz">Datenschutzerkl&auml;rung</a>
+   <a href="https://github.com/scimbe/CADS-Tunnel">GitHub</a>
+  </div>
+ </div>
+</footer>
+</body></html>
