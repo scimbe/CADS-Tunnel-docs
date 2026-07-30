@@ -45,6 +45,24 @@ found and fixed; a fresh tunnel now reaches Gelb in the same request that author
 on a delay. The periodic sweep still exists as a safety net for the cases that can't be synchronous
 (edge-admin transiently unreachable, a race on restart), not as the primary mechanism.
 
+## What happens to an already-authorized tunnel if the edge restarts
+
+A separate question from Rot→Gelb timing: if your tunnel is already Gelb or Grün and the platform's edge
+process itself restarts (a maintenance redeploy, for example), does your hostname have to be
+re-authorized from scratch? Confirmed live, not assumed: no — the edge rehydrates every hostname
+authorization it owns from the control plane's persistent registry on boot, before serving any traffic.
+A fresh edge process starting today logs exactly this:
+
+```
+ct-edge: mesh-registry heartbeat/rehydration enabled against http://control-plane:8090 (CT_EDGE_ID=primary)
+ct-edge: rehydrated 36 hostname authorization(s) from http://control-plane:8090 (edge_id=primary)
+```
+
+Practically: your `ct-agent` process reconnecting after an edge restart is a normal transport
+reconnection, not a re-authorization — the edge already knows your hostname is yours again by the time
+your agent redials. This closes the class of outage where an edge restart used to make every hostname
+look unclaimed until each tunnel's agent happened to redial and re-register.
+
 ## Should you go to Grün?
 
 Only if you specifically need your own certificate — for compliance reasons, to run your own cert
