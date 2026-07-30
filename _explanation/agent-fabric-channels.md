@@ -54,9 +54,7 @@ own devices — see
 [One service, several devices on the landing page](https://bunsenbrenner.org/#pipelines-usecase) for the
 composition side of that.
 
-## What this doesn't cover yet
+## Related
 
-The `CT_AGENT_CARD_*` (capability card / discovery) and `CT_AGENT_OFFER_*` (capacity offers for the
-pipeline auction) environment variables are real and referenced from
-[the CLI reference]({{ '/reference/cli/' | relative_url }}), but a full reference for them isn't written
-yet — flagged as a known gap, not silently skipped.
+Every `CT_CHANNEL_*`/`CT_AGENT_CARD_*`/`CT_AGENT_OFFER_*` variable is documented in
+[Environment variables (channels, cards, offers)]({{ '/reference/channel-environment-variables/' | relative_url }}).

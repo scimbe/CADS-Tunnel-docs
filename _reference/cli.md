@@ -60,6 +60,6 @@ still-retiring old identity during the handover window.
 
 These back the Agent-Fabric / MCP layer — see the
 [Direct, agent to agent diagram on the landing page](https://bunsenbrenner.org/#mcp) for the shape of
-what they enable. A full reference for the `CT_CHANNEL_*`/`CT_AGENT_CARD_*`/`CT_AGENT_OFFER_*`
-environment variables these commands read is not written yet — flagged as a known gap, not silently
-skipped.
+what they enable, and
+[Environment variables (channels, cards, offers)]({{ '/reference/channel-environment-variables/' | relative_url }})
+for every `CT_CHANNEL_*`/`CT_AGENT_CARD_*`/`CT_AGENT_OFFER_*` variable these commands read.

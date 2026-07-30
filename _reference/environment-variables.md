@@ -8,10 +8,10 @@ order: 1
 
 This covers the variables you need for a standard browser tunnel (what
 [Your first tunnel]({{ '/tutorials/first-tunnel/' | relative_url }}) and
-[Install ct-agent]({{ '/how-to/install-ct-agent/' | relative_url }}) use). `ct-agent` also has a much
-larger set of variables for Agent-Fabric channels, MCP tool exposure, and capacity offers/auctions
-(`CT_CHANNEL_*`, `CT_AGENT_CARD_*`, `CT_AGENT_OFFER_*`) — those aren't covered here yet; see the
-`ct-agent` source (`src/config.rs`, `src/channel_run.rs`) in the meantime.
+[Install ct-agent]({{ '/how-to/install-ct-agent/' | relative_url }}) use). `ct-agent` also has a
+separate set of variables for Agent-Fabric channels, MCP/AgentCard discoverability, and capacity
+offers/auctions — see
+[Environment variables (channels, cards, offers)]({{ '/reference/channel-environment-variables/' | relative_url }}).
 
 Pulled directly from `ct-agent`'s source, not from memory — if this drifts from the code, that's a bug
 in this page.
