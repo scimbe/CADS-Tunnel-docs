@@ -6,10 +6,11 @@ order: 3
 
 # Set up an Agent-Fabric channel
 
-This walks through the identity and admission side of an Agent-Fabric channel — what
-[Agent-Fabric channels]({{ '/explanation/agent-fabric-channels/' | relative_url }}) covers
-conceptually. Every command below was actually run to produce the example output (real keys, real
-derived channel id) — see the note at the end for the one step not click-tested in this pass.
+This walks through an Agent-Fabric channel end to end — identity, admission, and a real live
+connection — grounding what [Agent-Fabric channels]({{ '/explanation/agent-fabric-channels/' | relative_url }})
+covers conceptually. Every command below, including the final connection, was actually run to produce
+the example output (real keys, real derived channel id, a real payload sent between two independent
+processes).
 
 ## 1. Each member generates their own identity
 
@@ -89,14 +90,40 @@ The env var is <code>CT_GRANT_EXPIRES</code>, not <code>CT_GRANT_EXPIRES_AT</cod
 running it and reading the real error message, not assumed.
 </div>
 
-## What this doesn't cover yet
+## 5. Connect for real — the direct-address path
 
-Steps 1–4 above were all run for real to produce the example output on this page. Actually **connecting**
-the two members — either direct-address (`ct-agent channel` with `CT_CHANNEL_ROLE`/`CT_CHANNEL_ADDR`,
-pinning Noise keys directly, no grant needed at all for this specific path) or broker-mediated (using the
-grant from step 4) — is accurately described in
+The simplest connection path needs no grant at all: pin each side's Noise keys directly.
+`ct-agent channel accept` prints its QUIC cert on startup — the initiator needs it to dial in:
+
+```bash
+# Peer B (responder) — note the cert it prints:
+CT_CHANNEL_ROLE=accept CT_CHANNEL_ADDR=127.0.0.1:19402 \
+CT_CHANNEL_NOISE_KEY=<peer B's noise private key> \
+CT_CHANNEL_PEER_NOISE_KEY=<peer A's noise public key> \
+./ct-agent channel
+```
+
+```
+ct-agent channel: listening on 127.0.0.1:19402 (responder); peer must set CT_CHANNEL_PEER_CERT=3082015e...
+```
+
+```bash
+# Peer A (initiator), in a second terminal — pipes stdin to peer B over the encrypted session:
+echo "hello, encrypted" | CT_CHANNEL_ROLE=initiate CT_CHANNEL_ADDR=127.0.0.1:19402 \
+CT_CHANNEL_NOISE_KEY=<peer A's noise private key> \
+CT_CHANNEL_PEER_NOISE_KEY=<peer B's noise public key> \
+CT_CHANNEL_PEER_CERT=<the hex cert peer B printed> \
+./ct-agent channel
+```
+
+Real result, actually run: peer A's stdin (`REAL_ENCRYPTED_PAYLOAD_...`) arrived verbatim on peer B's
+stdout — two genuinely independent OS processes, real QUIC transport, a real Noise_IK session
+negotiated in between. Neither side printed an explicit "session established" message — a silent
+handshake is the expected behavior, not a hang; data simply starts flowing once it completes.
+
+The broker-mediated path (using the grant from step 4 instead of pinning keys directly, so neither side
+needs the other's address in advance) is accurately described in
 [the CLI reference]({{ '/reference/cli/' | relative_url }}) and
-[Agent-Fabric channels]({{ '/explanation/agent-fabric-channels/' | relative_url }}), grounded in source,
-but wasn't click-tested end-to-end in this pass (it needs two coordinated long-running processes and a
-dynamically-generated QUIC cert exchanged between them, which needs more careful orchestration than a
-single command). Flagged here rather than silently presented as verified.
+[Agent-Fabric channels]({{ '/explanation/agent-fabric-channels/' | relative_url }}) but wasn't click-tested
+in this pass — it needs the edge's broker/relay infrastructure, not just two local processes. Flagged
+here rather than silently presented as verified.
