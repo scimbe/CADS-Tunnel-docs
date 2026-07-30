@@ -24,6 +24,19 @@ Every procedure documented here should be actually run against the live deployme
 suite) before being written up as fact, not described from the source alone. Where that wasn't possible,
 say so explicitly in the page rather than presenting it as confirmed.
 
+This includes actual browser flows, not just API calls — no host-level browser install (and no sudo)
+needed for that:
+
+```bash
+docker run --rm -v "$PWD":/work -w /work mcr.microsoft.com/playwright:v1.48.0-noble \
+  sh -c "npm init -y >/dev/null 2>&1; npm install playwright@1.48.0 >/dev/null 2>&1; node check.js"
+```
+
+A `check.js` using `require('playwright')` runs headless Chromium inside the container — no
+`playwright install` needed, the image already bundles it. Used to confirm the landing page's
+email-first CTA genuinely lands on Keycloak's real registration form with the email pre-filled (not
+just that the redirect *header* says so) — screenshot proof, not just an HTTP status code.
+
 ## Local preview
 
 ```bash
