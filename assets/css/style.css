@@ -40,7 +40,7 @@ header.top{border-bottom:1px solid var(--line);position:sticky;top:0;background:
 
 /* -------- layout: sidebar + content -------- */
 .layout{display:grid;grid-template-columns:15rem 1fr;gap:2.5rem;padding:2.2rem 0 4rem;align-items:start}
-@media (max-width:860px){ .layout{grid-template-columns:1fr} }
+@media (max-width:860px){ .layout{grid-template-columns:1fr} nav.side{position:static;margin-bottom:1.5rem} }
 
 nav.side{position:sticky;top:5rem;font-size:.86rem}
 nav.side h4{font-family:var(--mono);font-size:.72rem;letter-spacing:.07em;text-transform:uppercase;color:var(--accent2);
