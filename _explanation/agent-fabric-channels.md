@@ -22,6 +22,11 @@ you already know the other agent's reachable address. No broker involved at all.
 peer — most agents behind NAT or a firewall. The edge's broker helps two agents that have never directly
 communicated find and verify each other.
 
+<figure>
+<img src="{{ '/assets/img/usecase-mcp.png' | relative_url }}" alt="The landing page's MCP section, showing an animated diagram of two agents connecting directly with a relay fallback path, plus a diagram of the public agent registry.">
+<figcaption>The same diagrams, live on the landing page.</figcaption>
+</figure>
+
 ## The fallback ladder
 
 Whichever mode, the connection attempt follows a strict order, same encrypted session throughout — only

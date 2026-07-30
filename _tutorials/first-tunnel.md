@@ -9,6 +9,11 @@ order: 1
 By the end of this tutorial you'll have a real service — even just a "hello world" — reachable at a
 public HTTPS address, running on hardware you already own. No credit card, no open port, no public IP.
 
+<figure>
+<img src="{{ '/assets/img/landing-hero.png' | relative_url }}" alt="The bunsenbrenner.org landing page, showing the headline, an animated device-to-browser encryption diagram, and the email-first 'Get your tunnel' form.">
+<figcaption>bunsenbrenner.org — where this tutorial starts.</figcaption>
+</figure>
+
 ## What you'll need
 
 - Any machine you can run a program on: a laptop, a Raspberry Pi, a spare VM, a container. Linux or
@@ -21,6 +26,16 @@ Go to [bunsenbrenner.org](https://bunsenbrenner.org/) and enter your email in th
 box on the landing page, or go straight to [bunsenbrenner.org/portal](https://bunsenbrenner.org/portal).
 You can sign up with Google, GitHub, or a plain email address — there's no password to invent if you use
 a provider.
+
+<figure>
+<img src="{{ '/assets/img/portal-shell.png' | relative_url }}" alt="The bunsenbrenner.org portal sign-in shell, with Continue with Google, Continue with GitHub, and Continue with email options.">
+<figcaption>Going straight to /portal instead shows all three options up front.</figcaption>
+</figure>
+
+<figure>
+<img src="{{ '/assets/img/registration-form.png' | relative_url }}" alt="Keycloak's registration form, with the email address already filled in from the landing page.">
+<figcaption>Typing your email on the landing page carries it straight into this form — you don't retype it.</figcaption>
+</figure>
 
 The moment your account exists, a tunnel is auto-provisioned for you — one **Standard**-tier tunnel per
 account, with an automatically assigned hostname like `hello-world-a1b2c3d4.bunsenbrenner.org`. You don't
@@ -73,6 +88,11 @@ authorizes it at the edge, not on a delay.
 
 ==> done — current tier: gelb
 ```
+
+<figure>
+<img src="{{ '/assets/img/terminal-setup-sh.png' | relative_url }}" alt="Terminal output of setup.sh running to completion, from environment check through reaching the Gelb certificate tier.">
+<figcaption>A real run, start to finish (routing token redacted).</figcaption>
+</figure>
 
 ## 4. Check it's really live
 
