@@ -99,21 +99,14 @@ footer.site-footer{border-top:1px solid var(--line);padding:2rem 0}
 .footer-inner .legal-links a{color:var(--muted2);text-decoration:none}
 .footer-inner .legal-links a:hover{text-decoration:underline}
 
-/* -------- per-page table of contents -------- */
-/* Mobile-first: a fixed slide-in overlay panel by default. The desktop
-   "sticky right column" look is layered on top inside a min-width media
-   query placed AFTER this base rule, so it reliably wins at >=1180px --
-   same equal-specificity/source-order reasoning as the nav.side fix
-   above; do not reorder these two blocks. */
-nav.toc{
- position:fixed;top:0;right:0;height:100vh;width:min(18rem,86vw);
- background:var(--panel);border-left:1px solid var(--line);
- padding:4.6rem 1.3rem 2rem;box-shadow:-14px 0 34px rgba(0,0,0,.28);
- transform:translateX(100%);transition:transform .25s ease;
- overflow-y:auto;z-index:45;font-size:.82rem;
-}
-body.toc-open nav.toc{transform:translateX(0)}
-nav.toc[hidden]{display:none}
+/* -------- per-page table of contents (desktop sticky right column) -------- */
+/* Hidden by default (no separate mobile off-canvas of its own -- below
+   1180px its content is mirrored into #mobile-menu's .mm-toc section
+   instead, so there is exactly one off-canvas panel, not two). The
+   :not([hidden]) override below has higher specificity than this base
+   rule by construction (attribute selector adds to it), so it reliably
+   wins at >=1180px regardless of source order. */
+nav.toc{display:none;font-size:.82rem}
 nav.toc h4{font-family:var(--mono);font-size:.72rem;letter-spacing:.07em;text-transform:uppercase;color:var(--accent2);margin:0 0 .7rem}
 nav.toc ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:.05rem}
 nav.toc li.toc-sub{padding-left:.85rem}
@@ -121,31 +114,61 @@ nav.toc a{display:block;padding:.32rem .6rem;border-radius:6px;text-decoration:n
 nav.toc a:hover{color:var(--text);background:var(--panel2)}
 nav.toc a.active{color:var(--accent2);border-left-color:var(--accent2);background:var(--panel2);font-weight:600}
 
-#toc-backdrop{display:none;position:fixed;inset:0;background:rgba(6,9,16,.5);z-index:40}
-body.toc-open #toc-backdrop{display:block}
+@media (min-width:1180px){
+ .layout{grid-template-columns:15rem 1fr 14rem}
+ nav.toc:not([hidden]){grid-column:3;display:block;position:sticky;top:5rem;max-height:calc(100vh - 7rem);overflow-y:auto}
+ #menu-toggle,#mobile-menu-backdrop{display:none}
+}
 
-#toc-toggle{
- display:flex;position:fixed;right:1.1rem;bottom:1.1rem;z-index:46;
+/* -------- unified mobile menu: site nav + on-page TOC in one panel, one toggle -------- */
+#mobile-menu-backdrop{display:none;position:fixed;inset:0;background:rgba(6,9,16,.5);z-index:40}
+body.menu-open #mobile-menu-backdrop{display:block}
+
+#mobile-menu{
+ position:fixed;top:0;right:0;height:100vh;width:min(19rem,88vw);
+ background:var(--panel);border-left:1px solid var(--line);
+ padding:4.6rem 1.3rem 2rem;box-shadow:-14px 0 34px rgba(0,0,0,.28);
+ transform:translateX(100%);transition:transform .25s ease;
+ overflow-y:auto;z-index:45;font-size:.86rem;
+ display:flex;flex-direction:column;gap:1.7rem;
+}
+body.menu-open #mobile-menu{transform:translateX(0)}
+
+#mobile-menu .mm-title{
+ display:flex;align-items:center;gap:.5rem;font-family:var(--serif);font-weight:600;
+ font-size:1.05rem;color:var(--text);padding-bottom:1.1rem;border-bottom:1px solid var(--line);
+}
+#mobile-menu .mm-title .flame{width:8px;height:8px;border-radius:50%;background:var(--accent);flex-shrink:0;box-shadow:0 0 0 3px rgba(217,138,79,.22)}
+
+/* Between 861-1179px the sidebar is already a normal visible column, so the
+   panel only needs to carry the page TOC there -- avoids showing the site
+   nav twice. Below 861px the sidebar is hidden (see nav.side override at
+   the end of this file) so the panel carries both sections. */
+@media (min-width:861px){ #mobile-menu .mm-nav{display:none} }
+
+#mobile-menu .mm-nav nav.side{display:block;position:static;font-size:inherit}
+#mobile-menu .mm-toc[hidden]{display:none}
+#mobile-menu .mm-toc{border-top:1px solid var(--line);padding-top:1.5rem}
+#mobile-menu .mm-toc h4{font-family:var(--mono);font-size:.72rem;letter-spacing:.07em;text-transform:uppercase;color:var(--accent2);margin:0 0 .7rem}
+#mobile-menu .mm-toc ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:.05rem}
+#mobile-menu .mm-toc li.toc-sub{padding-left:.85rem}
+#mobile-menu .mm-toc a{display:block;padding:.32rem .6rem;border-radius:6px;text-decoration:none;color:var(--muted);border-left:2px solid transparent}
+#mobile-menu .mm-toc a:hover{color:var(--text);background:var(--panel2)}
+#mobile-menu .mm-toc a.active{color:var(--accent2);border-left-color:var(--accent2);background:var(--panel2);font-weight:600}
+
+#menu-toggle{
+ display:none;position:fixed;right:1.1rem;bottom:1.1rem;z-index:46;
  width:2.9rem;height:2.9rem;border-radius:50%;border:1px solid var(--line);
  background:var(--accent);color:#1a1206;align-items:center;justify-content:center;
  box-shadow:0 8px 20px rgba(0,0,0,.32);cursor:pointer;padding:0;
 }
-#toc-toggle[hidden]{display:none}
-#toc-toggle svg{width:1.3rem;height:1.3rem;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
-#toc-toggle svg line{transition:transform .2s ease,opacity .2s ease;transform-origin:12px 12px}
-body.toc-open #toc-toggle svg .l1{transform:translateY(5px) rotate(45deg)}
-body.toc-open #toc-toggle svg .l2{opacity:0}
-body.toc-open #toc-toggle svg .l3{transform:translateY(-5px) rotate(-45deg)}
+#menu-toggle svg{width:1.3rem;height:1.3rem;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
+#menu-toggle svg line{transition:transform .2s ease,opacity .2s ease;transform-origin:12px 12px}
+body.menu-open #menu-toggle svg .l1{transform:translateY(5px) rotate(45deg)}
+body.menu-open #menu-toggle svg .l2{opacity:0}
+body.menu-open #menu-toggle svg .l3{transform:translateY(-5px) rotate(-45deg)}
 
-@media (min-width:1180px){
- .layout{grid-template-columns:15rem 1fr 14rem}
- nav.toc{
-  grid-column:3;position:sticky;top:5rem;height:auto;max-height:calc(100vh - 7rem);
-  width:auto;background:none;border-left:none;box-shadow:none;padding:0;
-  transform:none;z-index:auto;
- }
- #toc-toggle,#toc-backdrop{display:none}
-}
+@media (max-width:1179px){ #menu-toggle{display:flex} }
 
 /* -------- staggered scroll-reveal for list items -------- */
 .reveal-item{opacity:0;transform:translateY(10px);transition:opacity .5s ease,transform .5s ease}
@@ -154,12 +177,14 @@ body.toc-open #toc-toggle svg .l3{transform:translateY(-5px) rotate(-45deg)}
  .reveal-item{opacity:1;transform:none;transition:none}
 }
 
-/* Mobile sidebar override -- kept LAST in the file, deliberately, since it has
-   the same specificity as the base `nav.side{position:sticky}` rule above and
-   CSS resolves equal-specificity ties by source order, not by whether a media
-   query happens to match. An earlier version of this rule sat before the base
-   rule and was silently always losing -- confirmed live via a real headless
-   browser's computed style, not assumed from reading the CSS text. Do not
-   move this block earlier in the file without re-verifying against a real
-   browser, not just a local file copy (which masked the bug once already). */
-@media (max-width:860px){ nav.side{position:static;margin-bottom:1.5rem} }
+/* Below 860px the desktop sidebar column is hidden entirely -- its content
+   is mirrored into #mobile-menu's .mm-nav section instead, so there is one
+   navigation surface (the hamburger panel), not a permanently-visible
+   sidebar block stacked above the content plus a second overlay for the
+   page TOC. `.layout > nav.side` (direct child only) deliberately doesn't
+   match the second `nav.side` copy nested inside #mobile-menu .mm-nav.
+   Higher specificity than the base `nav.side{position:sticky}` rule (an
+   extra class from `.layout >`), so this wins regardless of source order --
+   kept last in the file anyway for consistency with the rest of this
+   history of mobile-breakpoint fixes. */
+@media (max-width:860px){ .layout > nav.side{display:none} }

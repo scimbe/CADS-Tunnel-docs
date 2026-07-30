@@ -39,8 +39,18 @@
  </nav>
 </div>
 
-<div id="toc-backdrop"></div>
-<button id="toc-toggle" type="button" hidden aria-label="Table of contents" aria-expanded="false" aria-controls="page-toc">
+<div id="mobile-menu-backdrop"></div>
+<nav id="mobile-menu" aria-label="Menu">
+ <div class="mm-title"><span class="flame"></span>Menu</div>
+ <div class="mm-section mm-nav">
+  {% include sidebar.html %}
+ </div>
+ <div class="mm-section mm-toc" id="mobile-toc" hidden>
+  <h4>On this page</h4>
+  <ul></ul>
+ </div>
+</nav>
+<button id="menu-toggle" type="button" aria-label="Menu" aria-expanded="false" aria-controls="mobile-menu">
  <svg viewBox="0 0 24 24" aria-hidden="true">
   <line class="l1" x1="4" y1="7" x2="20" y2="7"></line>
   <line class="l2" x1="4" y1="12" x2="20" y2="12"></line>
