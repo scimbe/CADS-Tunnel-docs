@@ -5,6 +5,7 @@
 <title>{% if page.title %}{{ page.title }} — {% endif %}CADS-Tunnel Docs</title>
 <meta name="description" content="{{ page.description | default: site.description }}">
 <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}?v={{ site.time | date: '%s' }}">
+<script defer src="{{ '/assets/js/docs.js' | relative_url }}?v={{ site.time | date: '%s' }}"></script>
 </head><body>
 
 <header class="top">
@@ -32,7 +33,20 @@
   </div>
   {% endif %}
  </main>
+ <nav class="toc" id="page-toc" hidden aria-label="On this page">
+  <h4>On this page</h4>
+  <ul></ul>
+ </nav>
 </div>
+
+<div id="toc-backdrop"></div>
+<button id="toc-toggle" type="button" hidden aria-label="Table of contents" aria-expanded="false" aria-controls="page-toc">
+ <svg viewBox="0 0 24 24" aria-hidden="true">
+  <line class="l1" x1="4" y1="7" x2="20" y2="7"></line>
+  <line class="l2" x1="4" y1="12" x2="20" y2="12"></line>
+  <line class="l3" x1="4" y1="17" x2="20" y2="17"></line>
+ </svg>
+</button>
 
 <footer class="site-footer">
  <div class="wrap footer-inner">
