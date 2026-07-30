@@ -31,6 +31,7 @@ in this page.
 | `CT_AGENT_STATE_DIR` | No | `./.ct-agent-state` (via setup script) | Where the bound identity/tenant/capability get persisted. |
 | `CT_AGENT_CAPABILITY_OUT` | No | `/shared/capability.bin` (agent's own default — **not** suitable outside CADS-Tunnel's own compose network) | Where the fetched capability material is written. The guided setup script overrides this to `$CT_AGENT_STATE_DIR/capability.bin`. |
 | `CT_BOOTSTRAP` | Alternative to `CT_AGENT_JOIN_TOKEN`+`CT_AGENT_TOKEN` | — | A single short-lived bootstrap token the setup script redeems server-side for the two tokens above, so they never touch disk/shell history beyond the resulting `.env`. |
+| `CT_AGENT_ONBOARD_TIMEOUT_SECS` | No | unset (wait indefinitely) | Bounds the one-shot onboarding call. Leave it unset for a real tunnel — `CT_AGENT_JOIN_TOKEN` is single-use, so a timeout that fires *after* the control plane already redeemed it leaves you with a dead token and no way to retry, unless `CT_AGENT_STATE_DIR` is also set (restart then restores the already-bound identity instead of re-redeeming). Only set this for a fail-fast CI/smoke-test run — `scripts/e2e-smoke.sh` defaults it to `30`. |
 
 ## Grün-specific (certificate issuance)
 
