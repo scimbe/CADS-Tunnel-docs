@@ -39,10 +39,18 @@ ZeroSSL certificate, and wrote:
   privkey.pem
 ```
 
-`ct-agent certificate` is a one-shot command — it fetches a certificate and exits (or keeps running
-briefly to renew, depending on how long you leave it up; check its own `--help` for the exact renewal
-behavior). It does not replace your running tunnel process; run it alongside, not instead of, the agent
-that's already serving.
+`ct-agent certificate` does **not** exit after obtaining the certificate — it's a persistent renewal
+daemon (`run_renewal_loop`, checking every 6 hours whether renewal is due) that keeps running until you
+stop it. If you only want the certificate and don't want a long-lived process hanging around, `Ctrl+C`
+(or send it `SIGTERM`) once you've confirmed Grün below — the files it already wrote are yours to keep;
+you'd just be responsible for renewing manually before they expire. It does not replace your running
+tunnel process either way; run it alongside, not instead of, the agent that's already serving.
+
+<div class="callout warn">
+<code>ct-agent</code> has no working <code>--help</code>/<code>-h</code> flag today — running it with an
+unrecognized first argument falls through to the default serve path instead of printing usage. Don't
+rely on <code>--help</code> for any <code>ct-agent</code> command; this documentation is the reference.
+</div>
 
 ## Confirm it worked
 
