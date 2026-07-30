@@ -6,22 +6,46 @@ order: 1
 
 # Install ct-agent
 
-`ct-agent` has a guided setup script for Linux/macOS (`setup.sh`) and Windows (`setup.ps1`), both in
-[`scimbe/ct-agent`](https://github.com/scimbe/ct-agent). This page covers the two install modes and the
-flags — for the full walkthrough, see [Your first tunnel]({{ '/tutorials/first-tunnel/' | relative_url }}).
+`ct-agent` has a guided setup script for Linux/macOS (`setup.sh`) and Windows (`setup.ps1`) — the one
+supported install path, no repo clone needed. This page covers the two install modes and the flags —
+for the full walkthrough, see [Your first tunnel]({{ '/tutorials/first-tunnel/' | relative_url }}).
 
-## Direct-host vs. Docker
+## Installing
 
 ```bash
-bash setup.sh --yes            # runs directly on this machine
-bash setup.sh --docker         # builds and runs a container instead
+# Linux / macOS
+curl -fsSL https://raw.githubusercontent.com/scimbe/ct-agent/main/scripts/setup.sh | bash
+```
+
+```powershell
+# Windows
+irm https://raw.githubusercontent.com/scimbe/ct-agent/main/scripts/setup.ps1 | iex
+```
+
+Both run directly on this host by default and ask you to confirm first (see below for why). To pass a
+flag through the pipe, it's not just appended after the URL — each shell needs its own syntax:
+
+```bash
+# Linux / macOS: -s -- hands everything after it to the script as $1, $2, ...
+curl -fsSL https://raw.githubusercontent.com/scimbe/ct-agent/main/scripts/setup.sh | bash -s -- --docker
+```
+
+```powershell
+# Windows: iex alone can't take parameters, so build a scriptblock and invoke it with them
+& ([scriptblock]::Create((irm https://raw.githubusercontent.com/scimbe/ct-agent/main/scripts/setup.ps1))) -Docker
 ```
 
 `ct-agent` is a network-facing process. Direct-host is simpler and has less overhead, but it's designed
 to run inside something isolated — a VM, a container, or a dedicated host — not on a machine holding
-data or credentials you wouldn't want reachable if the agent were ever compromised. `--docker` is the
-safer default if you're unsure; it builds a minimal image from the latest published release binary
+data or credentials you wouldn't want reachable if the agent were ever compromised. `--docker`/`-Docker`
+is the safer default if you're unsure; it builds a minimal image from the latest published release binary
 (no Rust toolchain or repo checkout needed) and runs it with your `.env` and a persistent state volume.
+
+<div class="callout">
+<code>--help</code>/<code>-h</code> works the same way through the pipe as running the script from a
+local file — <code>curl -fsSL ... | bash -s -- --help</code> prints the full flag list without installing
+anything.
+</div>
 
 ## Flags
 
