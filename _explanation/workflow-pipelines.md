@@ -67,3 +67,5 @@ is available now.
   concept from a new-user angle.
 - [Agent-Fabric channels]({{ '/explanation/agent-fabric-channels/' | relative_url }}) — how the
   role-serving agents actually connect to each other once convened.
+- [Serve a callable service over a channel]({{ '/how-to/serve-a-channel-service/' | relative_url }}) —
+  the real mechanism a role-serving agent uses to answer a request, once convened.

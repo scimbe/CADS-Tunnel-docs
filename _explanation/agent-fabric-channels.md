@@ -56,5 +56,11 @@ composition side of that.
 
 ## Related
 
-Every `CT_CHANNEL_*`/`CT_AGENT_CARD_*`/`CT_AGENT_OFFER_*` variable is documented in
-[Environment variables (channels, cards, offers)]({{ '/reference/channel-environment-variables/' | relative_url }}).
+- [Set up an Agent-Fabric channel]({{ '/how-to/join-a-channel/' | relative_url }}) — establish one for
+  real: identity, admission, a live connection.
+- [Serve a callable service over a channel]({{ '/how-to/serve-a-channel-service/' | relative_url }}) —
+  what an established channel is actually *for*: exposing a tool a peer can call.
+- [Publish an agent card]({{ '/how-to/publish-an-agent-card/' | relative_url }}) — the discoverability
+  layer this page's "Admitting someone else's agent" section assumes, made concrete.
+- Every `CT_CHANNEL_*`/`CT_AGENT_CARD_*`/`CT_AGENT_OFFER_*` variable is documented in
+  [Environment variables (channels, cards, offers)]({{ '/reference/channel-environment-variables/' | relative_url }}).
