@@ -67,6 +67,44 @@ form instead of login).
 **`POST /me/pipelines`** `{spec}` — publish a pipeline spec, owned by the caller's bearer-token subject.
 Requires an OIDC bearer token from a real portal login, not an admin token.
 
+<div class="callout warn">
+This and every other <code>/me/*</code> endpoint only exist when the control plane's OIDC verifier is
+configured <em>and</em> found a usable signing key in the realm's JWKS at boot — if either isn't true,
+the whole <code>/me/*</code> surface is silently absent (a plain <code>404</code>, not <code>401</code>),
+not just unauthorized. If you get a 404 here instead of a login-required response, that's what's
+happening, not a wrong path.
+</div>
+
+## Pipeline registry
+
+**`POST /registry/pipelines`** `{owner?, spec}` — admin-token gated, upserts a published `PipelineSpec`
+(machine-writer path; a human publishing their own pipeline uses `POST /me/pipelines` above instead).
+
+**`GET /registry/pipelines`** — public, no auth. `[{"id", "owner"}]` for every published pipeline —
+what [Workflow pipelines & the auction model]({{ '/explanation/workflow-pipelines/' | relative_url }})
+and the landing page's pipeline registry table both read.
+
+**`GET /registry/pipelines/:id`** — public, no auth. The full spec:
+
+```json
+{
+  "id": "flappy-demo",
+  "roles": [
+    {"service": "TextGeneration", "units": 1, "tag": "physics", "selection_policy": null},
+    {"service": "TextGeneration", "units": 1, "tag": "art", "selection_policy": null},
+    {"service": "SafetyCheck", "units": 1, "tag": "safety_check", "selection_policy": null}
+  ],
+  "operator_pubkey_hex": null,
+  "selection_policy": "LowestFloor"
+}
+```
+
+`selection_policy` is the pipeline-wide default (`LowestFloor`/`RoundRobin`/`LeastCalls`); a role can
+override it individually via its own `selection_policy`, `null` here meaning "inherit the pipeline
+default." `ct-agent channel join-pipeline-role` reads this to derive a role's channel id without needing
+a pairwise key exchange first — see
+[ct-agent CLI commands]({{ '/reference/cli/' | relative_url }}).
+
 ## Agent directory
 
 **`POST /registry/agents`** `{"holder_pubkey", "card_url", "role_tags"?, "skill_ids"?}` — admin-token
