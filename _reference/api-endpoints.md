@@ -71,6 +71,19 @@ user's join token comes from the portal's Install button instead.
 **`POST /admin/provision-tunnel`** `{"subject": "...", "name": "...", "hostname": "..."}` →
 `{"routing_token": "...", "hostname": "..."}`
 
+**`POST /accounts/open`** no body → `{"account": "..."}` (mints a fresh account, once per customer),
+**`POST /payment/intent`** `{"account": "...", "credits": <n>}` → `{"payment": "..."}`, and
+**`POST /billing/issue`** `{"account": "...", "price": <n>}` → `{"token": "..."}` (a minted routing
+token). Same
+`x-ct-admin-token` gate as the two endpoints above — these are the server-side steps a payment-provider
+integration runs after a real payment (open the account once, create an intent, then on the provider's
+signed webhook confirming payment issue the credit), not something a customer or a customer-facing client
+calls directly. They also fail closed: on a deployment that hasn't set `CT_CP_EDGE_ADMIN_TOKEN`, they're
+absent entirely (`404`), not just unauthenticated, since crediting an account by name with no possession
+proof would otherwise be an open door. The customer-facing balance paths are the session-authed portal's
+`POST /portal/account/credits` top-up and the OIDC-bearer-authed `POST /me/issue` — this admin-gated trio
+is deliberately not one of them.
+
 ## Portal / OIDC login
 
 **`GET /portal/login`** — redirects to Keycloak's login form (`/protocol/openid-connect/auth`).
