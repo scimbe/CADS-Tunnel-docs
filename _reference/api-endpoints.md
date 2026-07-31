@@ -81,6 +81,34 @@ form instead of login).
 **`POST /me/pipelines`** `{spec}` — publish a pipeline spec, owned by the caller's bearer-token subject.
 Requires an OIDC bearer token from a real portal login, not an admin token.
 
+### Getting a bearer token without a browser
+
+Every `/me/*` endpoint on this page needs one. A real portal login mints one automatically; scripting
+against these endpoints needs the same token minted headlessly — standard OAuth2 Resource Owner Password
+Credentials against Keycloak's own token endpoint, no CADS-Tunnel-specific API involved:
+
+```bash
+curl -X POST https://auth.bunsenbrenner.org/realms/ct-demo/protocol/openid-connect/token \
+  -H 'content-type: application/x-www-form-urlencoded' \
+  -d 'grant_type=password' \
+  --data-urlencode 'client_id=admin-cli' \
+  --data-urlencode 'username=<your account email>' \
+  --data-urlencode 'password=<your password>'
+```
+
+Returns a JSON body with `access_token` — send it as `Authorization: Bearer <token>`. Confirmed live: a
+bad credential against this exact endpoint returns `401`, not a routing error. `client_id=admin-cli` is
+Keycloak's built-in public client with direct-access-grants already enabled for this realm, not something
+CADS-Tunnel had to add. Tokens are short-lived (a Keycloak realm default is minutes) — mint fresh per
+scripting session rather than caching one.
+
+<div class="callout warn">
+Getting a token this way is unaffected by the <code>/me/*</code> outage note below — token minting is
+pure Keycloak, entirely separate from the control plane's own OIDC verifier. A freshly-minted token can
+still come back <code>404</code> when you actually use it against <code>/me/*</code> if that verifier
+itself is down; the token being valid and the endpoint being reachable are two different things.
+</div>
+
 ## Self-service channel registry
 
 The HTTP surface behind `ct-agent channel register` (see
