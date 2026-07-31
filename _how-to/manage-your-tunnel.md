@@ -20,6 +20,22 @@ gives you exactly one, auto-provisioned the moment your account exists — see
 need to re-run setup on a second machine or after a full local reset (see
 [Install ct-agent]({{ '/how-to/install-ct-agent/' | relative_url }})'s "starting over" section).
 
+## If your certificate offer lapsed: Erneut anfragen
+
+When a tunnel is queued for its own Grün certificate and the 48-hour claim window closes before
+`ct-agent certificate` completes the order (see the
+[admission queue]({{ '/explanation/certificate-tiers/' | relative_url }}#the-gelbgrün-admission-queue)),
+its row shows a German **Erneut anfragen** ("request again") button instead of a queue position. This is
+the only way back in — a lapsed claim does not automatically re-enter the queue on its own. Clicking it:
+
+- is a no-op if your tunnel isn't actually in the `lapsed` state (confirmed against this control plane's
+  own test suite — calling it early, or twice, never does anything unexpected),
+- otherwise puts your hostname back at the **end** of the queue with a fresh position, not its old spot,
+- is owner-scoped like every other action on this page — nobody else can reclaim your slot for you.
+
+Once you click it, get `ct-agent certificate` running again (or restart it if it's still running) before
+the next offer arrives — the button re-enters the queue, it doesn't retry the ACME order for you.
+
 ## Revoke a tunnel
 
 The **Revoke** button on your tunnel's row is a full, server-side teardown — not just a local reset. One
