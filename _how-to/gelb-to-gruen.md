@@ -87,3 +87,12 @@ curl -X POST https://<your-cp-url>/agent/acme-issuance-complete/<your-routing-to
 See [API endpoints]({{ '/reference/api-endpoints/' | relative_url }}) for what this actually does —
 the control plane doesn't verify a certificate exists, it trusts the routing token and reverts the edge
 to passthrough, genuinely Grün either way.
+
+<div class="callout warn">
+This call checks that your routing token is the <b>recorded owner</b> of the hostname — a real,
+separate registry from the edge's own host authorization. If your hostname was ever authorized
+directly against the edge's admin API rather than the control plane's, this fails with a clean
+<code>403</code> no matter how correct your routing token is. See
+[Authorize a new pipeline hostname]({{ '/how-to/authorize-a-pipeline-hostname/' | relative_url }})
+for the exact gotcha and the fix — found live, the hard way, this session.
+</div>

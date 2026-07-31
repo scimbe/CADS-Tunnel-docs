@@ -82,3 +82,7 @@ documentation fix, not a behavior change (confirmed via the hermetic test suite 
   its own real fail-closed/fail-static distinction.
 - [The internal Mesh-Plane CA]({{ '/explanation/mesh-plane-ca/' | relative_url }}) — the same
   internal PKI root the mesh-relay leg trusts for edge-to-edge TLS, no new certificate machinery.
+- [Authorize a new pipeline hostname]({{ '/how-to/authorize-a-pipeline-hostname/' | relative_url }})
+  — this same `mesh_ownership` table is also what Gelb→Grün promotion checks, and skipping it (by
+  authorizing straight at the edge instead of through the control plane) produces a real, reproduced
+  `403` with no other symptom.
