@@ -27,6 +27,7 @@ in this page.
 | `CT_AGENT_MODE` | No | unset | Set to `browser` for the raw-TLS-passthrough browser tunnel mode (what the setup script configures by default). Unset means [Mesh Plane]({{ '/explanation/mesh-plane-and-capabilities/' | relative_url }}) (Noise) mode instead — the actual default, opaque-token routed, no TLS anywhere in the path. |
 | `CT_AGENT_EDGE` | No, but see setup.sh | — | `host:port` of the mesh edge. The guided setup script derives this automatically from `CT_AGENT_CP_URL` + `/network-info`; only set it by hand if you're not using the setup script. |
 | `CT_AGENT_EDGE_CERT_URL` | No, but recommended | — | Base URL the agent fetches the edge's CA root from. Leaving this unset on a non-CADS-Tunnel deployment makes the agent hang indefinitely rather than error — the guided setup script defaults it to `CT_AGENT_CP_URL` for you. |
+| `CT_AGENT_EDGE_CERT` | No | `/shared/edge-cert.der` (not suitable outside CADS-Tunnel's own compose network) | Local path the fetched edge CA cert is cached to — the on-disk counterpart to `CT_AGENT_EDGE_CERT_URL` above. |
 | `CT_AGENT_ID` | No | `agent-<timestamp>-<pid>` | Stable identity key used to match persisted state on restart (`onboard_or_restore`). The guided setup script persists and reuses this across runs automatically — don't regenerate it by hand between runs of the same tunnel, or restore will fail to match and it'll try to re-onboard with an already-spent token. |
 | `CT_AGENT_STATE_DIR` | No | `./.ct-agent-state` (via setup script) | Where the bound identity/tenant/capability get persisted. |
 | `CT_AGENT_CAPABILITY_OUT` | No | `/shared/capability.bin` (agent's own default — **not** suitable outside CADS-Tunnel's own compose network) | Where the [Capability]({{ '/explanation/mesh-plane-and-capabilities/' | relative_url }}) — the self-contained Mesh Plane connection grant you distribute to your own Clients out of band — is written. Not fetched from anywhere: the agent **mints** it locally (`mint_capability`, a fresh random routing token by default), from material it already has. The guided setup script overrides the output path to `$CT_AGENT_STATE_DIR/capability.bin`. |
@@ -60,6 +61,15 @@ account/tunnel just to scrape it) — validated instead via `ct-agent`'s own pas
 binds a real TCP listener, serves the real `/metrics` handler, and scrapes it with a raw HTTP request:
 `cargo test observe:: -p ct-agent` — `3 passed; 0 failed`, re-run hermetically for this page, not
 assumed from an earlier pass.
+
+## Reliability and connectivity fallbacks
+
+| Variable | Default | Meaning |
+|---|---|---|
+| `CT_AGENT_RECONNECT_MAX_ATTEMPTS` | `10` | Reconnect attempts before the agent gives up and exits after losing the edge connection. `0` means retry forever — the right setting for a long-lived deployment: `CT_AGENT_JOIN_TOKEN` is single-use, so exiting can't cleanly re-onboard, and a bare process-manager restart would just crash-loop trying to redeem an already-spent token. Retrying forever keeps the bound credential and simply waits out the edge (e.g. through a redeploy). |
+| `CT_AGENT_FALLBACK_443` | `false` | If the configured edge port is blocked, also try the edge's unified `:443` front door (TLS-TCP, `ALPN=ct-edge`). Any non-empty value except `0`/`false` (case-insensitive) counts as true — not the `1`/`true`/`yes` convention used elsewhere in this reference, checked directly against the parsing code. |
+| `CT_AGENT_TCP_FALLBACK_POOL_SIZE` | `6` | How many pooled connections the TCP-fallback path keeps warm. Must be at least 1 if set — `0` is a hard config error, not "disabled". |
+| `CT_AGENT_DIRECT_ADVERTISE` | unset | An IP to advertise for a direct P2P path in [Mesh Plane]({{ '/explanation/mesh-plane-and-capabilities/' | relative_url }}) mode, bypassing the relay. Only meaningful there — Browser Plane has no P2P/relay distinction. |
 
 ## Grün-specific (certificate issuance)
 
