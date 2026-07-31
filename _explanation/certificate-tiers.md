@@ -10,6 +10,11 @@ Every tunnel moves through up to three certificate states. The names are German 
 a traffic-light metaphor for "not reachable yet" → "reachable, shared trust" → "reachable, your own
 trust."
 
+This page is entirely about your own **browser-facing** subdomain's public certificate, issued by a
+real public CA (Let's Encrypt) so ordinary browsers trust it. It's a different system from
+[the internal Mesh-Plane CA]({{ '/explanation/mesh-plane-ca/' | relative_url }}) that Agents and
+Clients trust for the tunnel's own transport — that one never goes through Rot/Gelb/Grün at all.
+
 ## Rot
 
 A tunnel that's been created but hasn't yet authorized at the edge — the hostname exists in the control
