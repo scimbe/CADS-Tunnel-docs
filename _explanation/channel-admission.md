@@ -78,6 +78,17 @@ the two now-distinguished causes read very differently:
   control-plane blip your join simply retried past — exactly the case this fix now tolerates for
   anyone who was already a member moments earlier.
 
+<div class="callout warn">
+A gap in the fix's first cut, found live and closed the same day: the transport-class branch (the
+one the fail-static cache exists to tolerate) returned silently — a real CP-unreachable incident
+looked identical to routine operation in the edge's own log. The edge now logs
+<code>ct-edge: channel-authorize UNRESOLVED [reason] channel=... holder=...</code> for every
+transport-class outcome — <code>[transport]</code> (connection error/timeout), <code>[status=N]</code>
+(a non-2xx, non-404/401 response), <code>[unparseable-body]</code>, or
+<code>[bad-operator-pubkey]</code> — mirroring the existing <code>channel-join NO [tag]</code>
+convention. Pure observability; the admission decision itself is unchanged.
+</div>
+
 ## Related
 
 - [Agent-Fabric channels]({{ '/explanation/agent-fabric-channels/' | relative_url }}) — how a join
