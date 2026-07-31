@@ -51,10 +51,27 @@ static Noise public key, which a Client pins to authenticate the Origin end-to-e
 that makes possession of the Capability alone sufficient to reach and trust your Origin, with no
 operator involvement in that trust decision at all.
 
+## How a Client actually reaches your Origin
+
+Per [ADR-0015](https://github.com/scimbe/CADS-Tunnel/blob/main/docs/adr/0015-p2p-mesh-with-rendezvous.md)
+— the Tailscale/DERP model — holding a Capability doesn't mean traffic routes through the platform at
+all. The edge only ever acts as a **rendezvous**: the Client presents its routing token (gated by a
+small proof-of-work, so rendezvous itself can't be used as a cheap DoS lever), the edge helps the Client
+and your Agent find each other, and the two attempt a **direct peer-to-peer path** via NAT hole-punching.
+If that succeeds, traffic flows Client↔Agent directly — the operator is genuinely out of the data path,
+not just claiming to be. Only when a direct path can't form (symmetric NAT, a restrictive firewall) does
+the connection fall back to relaying through the edge.
+
+Confirmed real and currently passing, not just described in the ADR: `ct-client`'s own test suite
+(`cargo test -p ct-client rendezvous::`, re-run hermetically for this page — 16 passed, 0 failed)
+includes `client_tunnels_directly_to_agent`, `p2p_falls_back_to_relay_when_direct_fails`, and coverage
+for both QUIC and the TCP/HTTP2 fallback transport, bidirectional streaming, and even a live
+`https_website_through_the_tunnel_with_client_side_cert_validation` case.
+
 <div class="callout warn">
-<strong>Honest scope of this page.</strong> This describes the real, source-verified Capability format
-and the design it implements — it does not walk through building or running a Mesh Plane Client, and
-this pass didn't click-test a live Mesh Plane connection the way the Agent-Fabric channel pages do.
+<strong>Honest scope of this page.</strong> The Capability format and the connection-establishment
+mechanics above are both real, source- and test-suite-confirmed — but this pass didn't click-test a live
+Mesh Plane connection against the production deployment the way the Agent-Fabric channel pages do.
 <code>crates/client</code> in this repo (<code>ct-client</code>) reads like an internal smoke-test/bench
 tool ("verifying the round-trip", printing labeled CSV rows for a latency sweep) rather than a
 customer-facing application — consistent with the design itself: a Capability is meant to be consumed
