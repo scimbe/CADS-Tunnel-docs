@@ -29,6 +29,9 @@ Referenced from three other pages as a known gap until now — pulled directly f
 | `CT_CHANNEL_GRANT` | The signed grant admitting you to a channel (see `channel grant` in [the CLI reference]({{ '/reference/cli/' | relative_url }})). |
 | `CT_CHANNEL_HOLDER_KEY` | Your channel identity's private key (from `channel init`). |
 | `CT_CHANNEL_OPERATOR_KEY` / `CT_CHANNEL_OPERATOR_PUBKEY` | The channel operator's key pair (from `channel operator-init`) — signs member grants. |
+| `CT_CHANNEL_NOISE_KEY` | Your channel identity's X25519 Noise **private** key — a separate keypair from `CT_CHANNEL_HOLDER_KEY`, used for the actual session handshake once a join is admitted (`channel init` prints both). SECRET. |
+| `CT_CHANNEL_NOISE_PUBKEY` | The public half of the above — what you hand `channel member-material` (see below) so your operator can register you with an attested Noise key. Safe to share. |
+| `CT_CHANNEL_BRIDGE_HOLDER` | Only for `channel member-material`, not for opening a channel itself: the **other** member's holder pubkey, needed to compute the pairwise channel id you're generating material for. Not needed for `channel join-pipeline-role`'s canonical pipeline-role ids — see [Join a published pipeline's role channel]({{ '/how-to/join-a-pipeline-role/' | relative_url }}). |
 
 ## Serving and calling a service over a channel
 
