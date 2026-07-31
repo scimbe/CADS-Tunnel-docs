@@ -45,21 +45,27 @@ re-convening on whatever cadence it wants failover to react on.
 
 ## What's actually live today
 
-Verified, not assumed: **nothing in production currently calls `convene`/`convene_with_policy` at all.**
-Grepping the whole workspace for real callers outside `pipeline.rs`'s own tests turns up none. Both
-flagship demos' own "auction" displays are hardcoded, fixed fixtures instead of the real clearing
-mechanism — `crew_bridge.rs::demo_auction()` for flappy-demo, `cookbook_bridge.rs::demo_auction()` for
-cookbook-demo, same pattern in both (tracked as an open proposal,
+This split between "the flagship demos" and "the real mechanism" no longer fully holds — updated after
+checking both, live. **The two original pipeline demos still don't call it**: flappy-demo's
+`crew_bridge.rs::demo_auction()` and cookbook-demo's `cookbook_bridge.rs::demo_auction()` are still
+hardcoded, fixed fixtures (tracked as an open proposal,
 [CADS-Tunnel#180](https://github.com/scimbe/CADS-Tunnel/issues/180), to wire flappy-demo's to real signed
 offers — cookbook-demo isn't mentioned in that issue yet, so treat it as the same known gap, not a
 separately-tracked one).
 
-None of that makes the mechanism fake — the auction, cross-role exclusivity, and all three selection
-policies are real, tested (`ct_common::pipeline`'s own test suite), and directly usable by anyone
-building on the platform. It just means: if you're evaluating whether *today's* example pipelines
-demonstrate live competitive bidding, they don't yet — the primitive is ready, the flagship demo hasn't
-adopted it. Build your own pipeline's bridge to call `convene_with_policy` yourself and the real market
-is available now.
+But a third, dedicated demo now does call it for real:
+[auction-demo.bunsenbrenner.org](https://auction-demo.bunsenbrenner.org/) runs six genuinely separate
+provider processes (confirmed live in its own logs: `submitted a real signed offer to
+http://auction-demo-bridge:8789`, one process per provider, not one process faking six), each publishing
+its own real signed `CapacityOffer` to a bridge that calls `PipelineSpec::auction_view` — which itself
+runs `convene_with_policy` internally, then annotates every qualifying bid with the real winner — per
+round, live, on demand. Switching the demo's policy selector between `LowestFloor`/`RoundRobin`/
+`LeastCalls` visibly changes which of the six providers wins, because it's the real policy logic
+deciding, not a scripted outcome.
+
+None of that makes the older claim about flappy/cookbook wrong — they still don't call it. It does mean
+the mechanism is no longer just "ready but unadopted": it's live, adopted, and dialable by anyone who
+wants to see (or build) a real pipeline auction rather than take this page's word for it.
 
 ## See also
 
