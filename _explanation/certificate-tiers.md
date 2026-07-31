@@ -102,6 +102,10 @@ reconnection, not a re-authorization — the edge already knows your hostname is
 your agent redials. This closes the class of outage where an edge restart used to make every hostname
 look unclaimed until each tunnel's agent happened to redial and re-register.
 
+The registry behind this — what it durably records, and the edge-to-edge relay leg it also
+enables for a future second edge — is covered in
+[The edge mesh registry]({{ '/explanation/edge-mesh-registry/' | relative_url }}).
+
 ## Should you go to Grün?
 
 Only if you specifically need your own certificate — for compliance reasons, to run your own cert
