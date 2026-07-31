@@ -79,7 +79,8 @@ kill $(cat ./ct-agent.pid) 2>/dev/null; rm -rf ./.ct-agent-state ./ct-agent.pid
 ```
 
 A full reset only clears your *local* state — it does not revoke the tunnel itself on the platform side.
-For that, use the portal UI (**Delete** on the tunnel's page); there's no CLI/script equivalent today.
+For that, use the portal UI (**Revoke** on your [tunnels page]({{ '/how-to/manage-your-tunnel/' | relative_url }})); there's
+no CLI/script equivalent today.
 
 <div class="callout">
 Rotating just your origin's signing key, without re-onboarding or touching the tunnel's identity at all,
