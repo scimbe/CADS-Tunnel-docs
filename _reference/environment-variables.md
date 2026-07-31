@@ -33,6 +33,34 @@ in this page.
 | `CT_BOOTSTRAP` | Alternative to `CT_AGENT_JOIN_TOKEN`+`CT_AGENT_TOKEN` | — | A single short-lived bootstrap token the setup script redeems server-side for the two tokens above, so they never touch disk/shell history beyond the resulting `.env`. |
 | `CT_AGENT_ONBOARD_TIMEOUT_SECS` | No | unset (wait indefinitely) | Bounds the one-shot onboarding call. Leave it unset for a real tunnel — `CT_AGENT_JOIN_TOKEN` is single-use, so a timeout that fires *after* the control plane already redeemed it leaves you with a dead token and no way to retry, unless `CT_AGENT_STATE_DIR` is also set (restart then restores the already-bound identity instead of re-redeeming). Only set this for a fail-fast CI/smoke-test run — `scripts/e2e-smoke.sh` defaults it to `30`. |
 
+## Observability — metrics stay on your side
+
+Per [ADR-0016](https://github.com/scimbe/CADS-Tunnel/blob/main/docs/adr/0016-agent-side-observability.md):
+since the operator is payload-blind, per-connection observability can only exist at your own agent.
+`ct-agent` can serve its own metrics locally, in your own open format, to your own stack — nothing routes
+through the platform.
+
+| Variable | Required | Default | Meaning |
+|---|---|---|---|
+| `CT_AGENT_METRICS_LISTEN` | No | unset (no metrics server) | `host:port` to serve `GET /metrics` on, in Prometheus text exposition format — point your own Prometheus/Grafana at it. |
+
+Six counters, confirmed against source (`ct_common::metrics::TunnelMetrics::render_prometheus`):
+
+```
+ct_tunnels_opened_total       — tunnels successfully established
+ct_tunnels_failed_total       — tunnel attempts that failed before or during the handshake
+ct_bytes_to_origin_total      — bytes relayed from client to origin
+ct_bytes_to_client_total      — bytes relayed from origin to client
+ct_handshakes_total           — completed Noise handshakes
+ct_handshake_millis_total     — cumulative handshake latency, milliseconds
+```
+
+Not click-tested against a live tunnel this pass (would mean standing up a throwaway production
+account/tunnel just to scrape it) — validated instead via `ct-agent`'s own passing test suite, which
+binds a real TCP listener, serves the real `/metrics` handler, and scrapes it with a raw HTTP request:
+`cargo test observe:: -p ct-agent` — `3 passed; 0 failed`, re-run hermetically for this page, not
+assumed from an earlier pass.
+
 ## Grün-specific (certificate issuance)
 
 | Variable | Required | Meaning |
