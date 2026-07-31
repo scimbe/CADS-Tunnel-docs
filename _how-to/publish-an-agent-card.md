@@ -133,3 +133,10 @@ Real response, right now:
 
 `?role=` / `?skill=` filter by exact token — see
 [API endpoints]({{ '/reference/api-endpoints/' | relative_url }}).
+
+<div class="callout warn">
+That registry entry itself is re-confirmed live each time this page is checked (still exactly this row,
+right now) — but its <code>card_url</code> hostname is a separate, unrelated service that isn't always
+up; don't take a dead link there as a sign the registry entry or this mechanism is wrong. The registry
+only stores what was registered, it doesn't re-verify <code>card_url</code> stays reachable afterward.
+</div>
