@@ -33,6 +33,22 @@ Referenced from three other pages as a known gap until now — pulled directly f
 | `CT_CHANNEL_NOISE_PUBKEY` | The public half of the above — what you hand `channel member-material` (see below) so your operator can register you with an attested Noise key. Safe to share. |
 | `CT_CHANNEL_BRIDGE_HOLDER` | Only for `channel member-material`, not for opening a channel itself: the **other** member's holder pubkey, needed to compute the pairwise channel id you're generating material for. Not needed for `channel join-pipeline-role`'s canonical pipeline-role ids — see [Join a published pipeline's role channel]({{ '/how-to/join-a-pipeline-role/' | relative_url }}). |
 
+## Operator: registering a channel and signing grants
+
+The two operator-side `ct-agent channel` subcommands — `register` (self-service `POST /me/channels`,
+see [the API endpoints reference]({{ '/reference/api-endpoints/' | relative_url }}) for the HTTP
+surface itself) and `grant` (signs a member's admission grant, offline, no CP round-trip) — read a
+distinct set of variables from the ones above. Source-grounded against
+`ChannelRegisterRequest`/`OperatorGrantRequest` in `ct-agent`'s `channel_run.rs`.
+
+| Variable | Meaning |
+|---|---|
+| `CT_OIDC_TOKEN` | `channel register` only: your OIDC bearer token, identifying the owning subject to the control plane. Minted the same way as for the other self-service `/me/*` calls. |
+| `CT_GRANT_CHANNEL` | `channel grant`/`channel register`: the channel id, 64 hex. |
+| `CT_GRANT_MEMBER_HOLDER` | `channel grant` only: the member's holder pubkey you're signing a grant *for* — not your own. |
+| `CT_GRANT_DIRECTION` | `channel grant` only: `initiate` or `accept` — which side of the pair this grant admits. One grant per member, opposite directions. |
+| `CT_GRANT_EXPIRES` | `channel grant` only: unix-seconds expiry. Exactly this name — **not** `CT_GRANT_EXPIRES_AT`, found live by an actual malformed-env error. |
+
 ## Serving and calling a service over a channel
 
 Once a channel is open (bare `ct-agent channel`, no further flags, is the historical stdin/stdout pipe
