@@ -12,6 +12,11 @@ covers conceptually. Every command below, including the final connection, was ac
 the example output (real keys, real derived channel id, a real payload sent between two independent
 processes).
 
+Everything here sets `CT_CHANNEL_*` env vars yourself. If someone else handed you a ready-to-run
+command instead — `curl ... | CT_BOOTSTRAP=... sh` — see
+[Bring up a channel member with one command]({{ '/how-to/channel-one-liner/' | relative_url }})
+for what that form does and why it never exposes your private key.
+
 ## 1. Each member generates their own identity
 
 Locally, on each machine that will join the channel — private keys never leave the machine that
