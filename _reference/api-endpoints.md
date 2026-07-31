@@ -67,6 +67,29 @@ form instead of login).
 **`POST /me/pipelines`** `{spec}` — publish a pipeline spec, owned by the caller's bearer-token subject.
 Requires an OIDC bearer token from a real portal login, not an admin token.
 
+## Self-service channel registry
+
+The HTTP surface behind `ct-agent channel register` (see
+[ct-agent CLI commands]({{ '/reference/cli/' | relative_url }})) and the self-service provisioning flow
+in [Set up an Agent-Fabric channel]({{ '/how-to/join-a-channel/' | relative_url }}). All three require an
+OIDC bearer token, same as `/me/pipelines`; the `owner` is always the verified token subject, never a
+request field, so a caller can only register or manage channels they own.
+
+**`POST /me/channels`** `{"channel": "<64 hex>", "operator_pubkey": "<64 hex>"}` — register a channel
+you own. `channel` is any 32-byte hex id you pick (doesn't have to be derived — `channel_id_for_link` or
+`channel_id_for_pipeline_role` are just the conventions this platform's own tooling uses to avoid an
+out-of-band ID exchange, not a server-enforced requirement). `403` if that channel id is already owned by
+a different subject.
+
+**`POST /me/channels/:channel/members`** `{"holder": "<64 hex>", "noise_pubkey": "<64 hex>", "noise_attestation": "<128 hex>"}`
+— add a member. `noise_attestation` is the member's own ed25519 signature over
+`member_noise_attest_bytes(channel, holder, noise_pubkey)` — the control plane verifies it server-side,
+so an owner can't seed a forged or un-attested Noise key even for a channel they own. `400` if it doesn't
+verify; `403` if you're not the channel's owner.
+
+**`POST /me/channels/:channel/members/:holder/remove`** — revoke a member, no body. Same `403` if you're
+not the owner.
+
 <div class="callout warn">
 This and every other <code>/me/*</code> endpoint only exist when the control plane's OIDC verifier is
 configured <em>and</em> found a usable signing key in the realm's JWKS at boot — if either isn't true,
