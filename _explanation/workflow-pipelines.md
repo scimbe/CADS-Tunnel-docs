@@ -69,3 +69,6 @@ is available now.
   role-serving agents actually connect to each other once convened.
 - [Serve a callable service over a channel]({{ '/how-to/serve-a-channel-service/' | relative_url }}) —
   the real mechanism a role-serving agent uses to answer a request, once convened.
+- [Publish your own pipeline]({{ '/how-to/publish-a-pipeline/' | relative_url }}) — the practical
+  companion to this page: the exact `PipelineSpec` shape and `POST /me/pipelines` call that gets a
+  pipeline like the ones described above actually published and discoverable.

@@ -121,3 +121,5 @@ redo of anything above.
   Grün exist and what's actually different between them.
 - [Environment variables]({{ '/reference/environment-variables/' | relative_url }}) — every
   `CT_AGENT_*` variable, not just the ones this tutorial used.
+- [Manage your tunnel from the portal]({{ '/how-to/manage-your-tunnel/' | relative_url }}) — view,
+  revoke, or reconnect the tunnel you just created, straight from the dashboard.

@@ -51,7 +51,9 @@ actually complete an order against that CA before the window closes. Miss it —
 the DNS-01 exchange kept failing, whatever the reason — and the offer lapses: the CA assignment is
 cleared and your hostname doesn't automatically re-enter the queue. From the portal's tunnels page, a
 lapsed hostname shows a **Erneut anfragen** ("request again") button that puts it back at the end of the
-line; there's no equivalent from `ct-agent` itself today.
+line; there's no equivalent from `ct-agent` itself today — see
+[Manage your tunnel from the portal]({{ '/how-to/manage-your-tunnel/' | relative_url }}#if-your-certificate-offer-lapsed-erneut-anfragen)
+for exactly what clicking it does.
 
 <div class="callout">
 The public <code>GET /agent/acme-admission/:routing_token/:hostname</code> endpoint (see
