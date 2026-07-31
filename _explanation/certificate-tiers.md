@@ -36,6 +36,38 @@ a real CA (Let's Encrypt or ZeroSSL, depending on current CA rotation and headro
 edge stops terminating TLS on the platform's shared certificate for your hostname and instead passes the
 connection through to your own origin, which now terminates TLS with its own certificate.
 
+## The Gelb→Grün admission queue
+
+Unlike Rot→Gelb, Gelb→Grün genuinely does certificate-authority work — and every CA enforces its own
+issuance-rate limits. To stay inside those limits platform-wide, the control plane runs a periodic
+admission sweep (confirmed live in production, ticking every 60 seconds) that tracks each active CA's
+issuance budget over a rolling window and only offers a CA to a hostname when that CA still has headroom
+— picking whichever eligible CA currently has the *most* headroom, and skipping any CA the deployment
+hasn't configured credentials for (EAB) even if it looks technically eligible otherwise. If every active
+CA is out of budget, your hostname simply waits at the back of a FIFO queue until headroom frees up.
+
+Once the sweep offers you a CA, you're in a **48-hour claim window**: `ct-agent certificate` needs to
+actually complete an order against that CA before the window closes. Miss it — the agent wasn't running,
+the DNS-01 exchange kept failing, whatever the reason — and the offer lapses: the CA assignment is
+cleared and your hostname doesn't automatically re-enter the queue. From the portal's tunnels page, a
+lapsed hostname shows a **Erneut anfragen** ("request again") button that puts it back at the end of the
+line; there's no equivalent from `ct-agent` itself today.
+
+<div class="callout">
+The public <code>GET /agent/acme-admission/:routing_token/:hostname</code> endpoint (see
+<a href="{{ '/reference/api-endpoints/' | relative_url }}">API endpoints</a>) intentionally exposes less
+than the portal does: <code>claim_deadline</code> tells you an offer is open and when it closes, but
+there's no <code>queue_position</code> or explicit "queued vs. offered vs. lapsed" field in the API
+response — that finer state only renders in the portal's own tunnels page. If <code>ct-agent
+certificate</code> looks like it's waiting, checking the portal is how you'd actually see whether that's
+"queued, no CA offered yet" or "offered, counting down."
+</div>
+
+In practice this queue is invisible on a lightly-loaded deployment — a fresh tunnel usually gets offered a
+CA on the very next sweep tick. It only becomes visible under real contention for a CA's rate limit
+(this platform, being self-hosted at modest scale, cares about this enough to track CA budgets
+per-CA rather than assume unlimited headroom).
+
 ## Why the delay between Rot and Gelb used to matter
 
 Historically, the platform advertised that Rot→Gelb was synchronous but a bug meant the promotion

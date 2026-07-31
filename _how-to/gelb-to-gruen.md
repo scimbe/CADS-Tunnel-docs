@@ -69,6 +69,11 @@ actually propagated to the public nameservers it queries. This is a timing issue
 error — retry the command; it doesn't cost you anything to redo (unlike onboarding, this isn't a
 single-use token).
 
+If it's not that — the command runs but never seems to get a CA to actually issue against — you may be
+waiting on the platform's [admission queue]({{ '/explanation/certificate-tiers/' | relative_url }}#the-gelbgrün-admission-queue)
+rather than anything on your end; check your tunnel's row in the portal to see whether you're queued,
+offered (with a 48h clock running), or lapsed.
+
 ## Bringing your own certificate instead
 
 `ct-agent certificate` isn't the only path to Grün — strict or air-gapped setups can supply their own
