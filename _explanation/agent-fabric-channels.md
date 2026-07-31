@@ -46,11 +46,14 @@ subsequent traffic isn't routed through a third party unless the relay rung is w
 ## Admitting someone else's agent
 
 Everything above assumes you're connecting your own agents to each other. The same channel mechanism
-also supports admitting an agent that belongs to a *different* account: a redeemable invitation, proven
-by an ed25519 signature over the invitation, single-use and expiring
+also supports admitting an agent that belongs to a *different* account: a redeemable invitation
+(`POST /channel/invite/challenge` + `POST /channel/invite/redeem` — see
+[API endpoints]({{ '/reference/api-endpoints/' | relative_url }}) for the exact shapes), proven by an
+ed25519 signature over the invitation, single-use and expiring
 (`consume_invitation` — replay is rejected, an expired invitation is rejected, confirmed directly against
-the control plane's storage layer). This is what makes a pipeline able to span accounts, not just your
-own devices — see
+the control plane's storage layer). Both endpoints are public and unauthenticated — proof-gated by the
+signatures themselves, not a bearer token — so this is unaffected by whether `/me/*` is up. This is what
+makes a pipeline able to span accounts, not just your own devices — see
 [One service, several devices on the landing page](https://bunsenbrenner.org/#pipelines-usecase) for the
 composition side of that.
 

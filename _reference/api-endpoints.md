@@ -90,6 +90,34 @@ verify; `403` if you're not the channel's owner.
 **`POST /me/channels/:channel/members/:holder/remove`** — revoke a member, no body. Same `403` if you're
 not the owner.
 
+## Cross-account channel invitations
+
+How [Agent-Fabric channels]({{ '/explanation/agent-fabric-channels/' | relative_url }})' "admitting
+someone else's agent" actually works over HTTP. Unlike everything else on this page below "Portal / OIDC
+login", these two are **public, unauthenticated, and unaffected by the `/me/*` outage noted below** — no
+bearer token, no admin token. They're proof-gated instead: only someone holding the right signatures can
+do anything with them.
+
+**`POST /channel/invite/challenge`** — no body. `{"challenge": "<hex>"}`, a fresh single-use nonce the
+invitee binds into its redemption signature (defense-in-depth against a captured redemption being
+replayed, independent of the invitation's own single-use record).
+
+**`POST /channel/invite/redeem`** `{"invitation": "<hex>", "redeem_sig": "<128 hex>", "holder": "<64 hex>", "noise_pubkey": "<64 hex>", "noise_attestation": "<128 hex>", "challenge": "<64 hex, optional>"}`
+— redeem an operator-signed invitation into real channel membership. `invitation` is the operator's
+signed grant of entry (hex-encoded `SignedChannelInvitation`); `redeem_sig` is the invitee's own
+signature proving *they* accepted and chose this `holder` key, not just that they possess someone else's
+invitation. `404` on an unknown channel, `410` on an expired invitation, `403` on any other verification
+failure.
+
+<div class="callout warn">
+Honest gap: there's no <code>ct-agent</code> CLI command to actually <em>issue</em> a
+<code>SignedChannelInvitation</code> today (only <code>ct_common::channel</code>'s library primitives)
+— the endpoint shapes above are cross-checked directly against the handler code and its request/response
+structs, but this pass didn't build a standalone signer to click-test a full round-trip the way
+<a href="{{ '/how-to/join-a-channel/' | relative_url }}">the direct-address channel connection</a> was.
+Flagged here rather than presented as verified end to end.
+</div>
+
 <div class="callout warn">
 This and every other <code>/me/*</code> endpoint only exist when the control plane's OIDC verifier is
 configured <em>and</em> found a usable signing key in the realm's JWKS at boot — if either isn't true,
