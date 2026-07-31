@@ -59,6 +59,10 @@ composition side of that.
 
 ## Related
 
+- [How the edge decides whether to admit a channel join]({{ '/explanation/channel-admission/' | relative_url }})
+  — what actually happens at the admission step this page's fallback ladder leads into, including a
+  real reliability fix (fail-static vs. fail-closed) that shipped the same day this page was last
+  touched.
 - [Set up an Agent-Fabric channel]({{ '/how-to/join-a-channel/' | relative_url }}) — establish one for
   real: identity, admission, a live connection.
 - [Serve a callable service over a channel]({{ '/how-to/serve-a-channel-service/' | relative_url }}) —
