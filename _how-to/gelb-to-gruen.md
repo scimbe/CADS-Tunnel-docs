@@ -10,7 +10,10 @@ A freshly-onboarded tunnel is **Gelb**: live, trusted by browsers, but terminati
 shared across every Gelb-tier tunnel on the platform. **Grün** means your service holds its own,
 individually-issued certificate instead. See
 [Certificate tiers explained]({{ '/explanation/certificate-tiers/' | relative_url }}) for why this
-distinction exists at all.
+distinction exists at all, and
+[The three DNS-01 backends behind every cert on this platform]({{ '/explanation/dns-01-providers/' | relative_url }})
+for how `ct-agent certificate` below actually proves you own the hostname, without ever holding a
+zone-wide DNS credential.
 
 ## Before you start
 
