@@ -43,6 +43,38 @@ attested public key the two agents need to verify each other. It never sees plai
 and it's never a permanent hub sitting in the middle of an established session: once two agents connect,
 subsequent traffic isn't routed through a third party unless the relay rung is what succeeded.
 
+## Upgrading from relay to direct, in-band
+
+The fallback ladder above describes the *initial* connection attempt. There's a separate, later
+opportunity: once a session has landed on the relay rung, `CT_CHANNEL_DIRECT_UPGRADE=1` opts it into
+trying to cut over to a real direct link **mid-session**, negotiated **over the already-authenticated
+relay stream itself** — no new port, no new listener, no restart of the handshake. Each side offers the
+other its own edge-observed reflexive (post-NAT) address; the peer attempts one real UDP dial to it. If
+that succeeds, the session cuts over to the direct link; if not, it stays on relay, transparently, with
+no dropped bytes either way.
+
+<div class="callout warn">
+Real, live-tested result (2026-07-31, both directions independently confirmed — see
+<a href="https://github.com/scimbe/CADS-Tunnel/issues/248">scimbe/CADS-Tunnel#248</a> for the full
+traces): tested against two genuinely separate real networks — one peer with a public IP, one behind a
+home NAT. In **both** cases the negotiation worked exactly as designed (candidate offered, a real direct
+dial attempted, e.g. <code>#104 upgrade — direct dial to 89.56.48.254:1024 failed (Unreachable) —
+staying on relay</code>) and the session continued cleanly on relay. In **neither** case did the direct
+dial actually succeed. That's not a bug or an incomplete result — a bare UDP dial to a NAT'd address,
+with no coordinated hole-punching on the other side, has essentially no chance of connecting. This
+mechanism proves the negotiation and fallback are correct and safe in production; it is not, by itself,
+a NAT-traversal solution. Real direct connectivity across NATs would need an actual hole-punch
+coordinator (see <code>CT_CHANNEL_CIRCUIT_RELAY</code> below) — a distinct, larger piece of work, not
+attempted by this mechanism.
+</div>
+
+Falls back automatically if the offered candidate isn't safe to dial (global-unicast only, so a private
+or loopback address can never be smuggled in as a "direct" target) or the upgrade simply fails for any
+other reason. Default off — unset, nothing about the fallback ladder above changes. On a single-host
+deployment (this project's own demos included) the reflexive address the edge observes is itself
+private, so the upgrade degrades to relay every time by design, not as a failure — the two real-network
+tests above are what actually exercises the interesting path.
+
 ## Admitting someone else's agent
 
 Everything above assumes you're connecting your own agents to each other. The same channel mechanism
