@@ -40,7 +40,15 @@ If that distinction matters for your threat model, Grün's own-certificate model
 ## What "zero-knowledge" does *not* mean
 
 - It does not mean the operator can't see that a tunnel exists, roughly when it connects, or coarse
-  metadata. The transport is encrypted; the platform is not invisible.
+  metadata — concretely: your account, which tunnel it is, and byte counts each direction (the edge's
+  relay function returns exactly that pair, `(bytes a→b, bytes b→a)`, never the bytes themselves). The
+  transport is encrypted; the platform is not invisible.
+- **It does not mean anonymity.** Accounts are conventional Keycloak/OIDC — the operator knows who you
+  are for billing and abuse-handling, the same as almost any hosted service. The honest claim here is
+  confidentiality of what flows through the tunnel, not anonymity of who's running it.
+- It does not mean immunity from lawful process or censorship resistance in a legal/jurisdictional sense
+  — those are operational and legal questions the software doesn't attempt to answer, not a technical
+  guarantee this platform makes.
 - **The hostname specifically depends on which access mode you're on** — this page and most of this site
   describe Browser Plane, where the edge genuinely does read your hostname from the TLS SNI to route the
   connection (that's the actual tradeoff that gets you an ordinary browser-reachable site). It does
