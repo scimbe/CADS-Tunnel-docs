@@ -65,17 +65,35 @@ operator involvement in that trust decision at all.
 Per [ADR-0015](https://github.com/scimbe/CADS-Tunnel/blob/main/docs/adr/0015-p2p-mesh-with-rendezvous.md)
 — the Tailscale/DERP model — holding a Capability doesn't mean traffic routes through the platform at
 all. The edge only ever acts as a **rendezvous**: the Client presents its routing token (gated by a
-small proof-of-work, so rendezvous itself can't be used as a cheap DoS lever), the edge helps the Client
-and your Agent find each other, and the two attempt a **direct peer-to-peer path** via NAT hole-punching.
-If that succeeds, traffic flows Client↔Agent directly — the operator is genuinely out of the data path,
-not just claiming to be. Only when a direct path can't form (symmetric NAT, a restrictive firewall) does
-the connection fall back to relaying through the edge.
+small proof-of-work, so rendezvous itself can't be used as a cheap DoS lever), and if your Agent has
+advertised a reachable direct address, the edge hands it to the Client to try. If that succeeds, traffic
+flows Client↔Agent directly — the operator is genuinely out of the data path, not just claiming to be.
+Otherwise the connection relays through the edge.
+
+<div class="callout warn">
+<strong>Correction to an earlier version of this page.</strong> This previously described the direct
+path as automatic "NAT hole-punching" attempted for every connection. Checked again, properly this time,
+by tracing where <code>CT_AGENT_DIRECT_ADVERTISE</code> is actually consumed
+(<code>ct-agent</code>'s <code>serve.rs::run_agent</code>): the real shipped mechanism for <strong>Mesh
+Plane tunnels</strong> is simpler and opt-in, not automatic STUN-style traversal — your Agent only
+advertises a direct address at all if you set
+<a href="{{ '/reference/environment-variables/' | relative_url }}"><code>CT_AGENT_DIRECT_ADVERTISE</code></a>
+to an IP it's genuinely reachable at (a public IP, or one you've port-forwarded yourself); the guided
+setup script doesn't set it, so a default onboarded tunnel is relay-only until you configure this
+yourself. Real NAT-traversal engineering (libp2p's DCUtR hole-punch) does exist in this codebase, source-
+confirmed in <code>ct-agent</code>'s <code>p2p.rs</code> — but it's for the separate
+<a href="{{ '/explanation/agent-fabric-channels/' | relative_url }}">Agent-Fabric channel</a> system
+(#121), not Mesh Plane tunnels, and even there it's only validated against a real 2-NAT lab setup, not
+proven for every real-world NAT.
+</div>
 
 Confirmed real and currently passing, not just described in the ADR: `ct-client`'s own test suite
 (`cargo test -p ct-client rendezvous::`, re-run hermetically for this page — 16 passed, 0 failed)
-includes `client_tunnels_directly_to_agent`, `p2p_falls_back_to_relay_when_direct_fails`, and coverage
-for both QUIC and the TCP/HTTP2 fallback transport, bidirectional streaming, and even a live
-`https_website_through_the_tunnel_with_client_side_cert_validation` case.
+includes `client_tunnels_directly_to_agent` (a Client dialing an Agent's advertised address straight,
+no edge involved) and `p2p_falls_back_to_relay_when_direct_fails` (an unreachable advertised address
+degrades cleanly to relay) — both exercise the advertise-then-dial-or-relay mechanism above, not NAT
+traversal. Also covered: both QUIC and the TCP/HTTP2 fallback transport, bidirectional streaming, and a
+live `https_website_through_the_tunnel_with_client_side_cert_validation` case.
 
 <div class="callout warn">
 <strong>Honest scope of this page.</strong> The Capability format and the connection-establishment
