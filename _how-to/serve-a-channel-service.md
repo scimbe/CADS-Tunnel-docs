@@ -102,17 +102,19 @@ guess.
 
 The "stays parked, serves whoever dials next" behavior is real — it's just gated on
 <strong>broker-mediated</strong> mode (<code>CT_CHANNEL_BROKER</code>/<code>CT_CHANNEL_RELAY</code>, see
-[Set up an Agent-Fabric channel]({{ '/how-to/join-a-channel/' | relative_url }})), not direct-address.
-An accept-side member with <code>CT_CHANNEL_SERVE=1</code> there parks, serves a peer, and loops back to
-admit the next automatically — no external restart loop needed, and (per a later hardening pass) admits
-a new peer even while a slow session is still in flight, rather than waiting for it to finish first. This
-is exactly what a crew bridge dials repeatedly in production.
+[Set up a broker-mediated channel]({{ '/how-to/broker-mediated-channel/' | relative_url }})), not
+direct-address. An accept-side member with <code>CT_CHANNEL_SERVE=1</code> there parks, serves a peer,
+and loops back to admit the next automatically — no external restart loop needed, and (per a later
+hardening pass) admits a new peer even while a slow session is still in flight, rather than waiting for
+it to finish first. This is exactly what a crew bridge dials repeatedly in production.
 
-Not click-tested against a live edge in this pass — same honest gap as
-[Set up an Agent-Fabric channel]({{ '/how-to/join-a-channel/' | relative_url }})'s broker-mediated
-section — but it's real, source-confirmed (`should_serve_loop`, gated on accept-side + serve mode) and
-covered by `ct-agent`'s own test suite, including a dedicated regression test that admits five
-concurrent peers while one session is deliberately kept slow.
+Click-tested against the live production edge, not just source-confirmed: two sequential real calls
+from two separate initiator processes against one long-lived accept-side process
+(<code>CT_CHANNEL_SERVE=1</code>) both succeeded without restarting it — real output included each
+call's own PID and timestamp, proving the same process really did answer both. Also
+source-confirmed (<code>should_serve_loop</code>, gated on accept-side + serve mode) and covered by
+`ct-agent`'s own test suite, including a dedicated regression test that admits five concurrent peers
+while one session is deliberately kept slow.
 
 ## Building a real pipeline role from this
 

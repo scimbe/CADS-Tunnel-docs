@@ -127,8 +127,6 @@ negotiated in between. Neither side printed an explicit "session established" me
 handshake is the expected behavior, not a hang; data simply starts flowing once it completes.
 
 The broker-mediated path (using the grant from step 4 instead of pinning keys directly, so neither side
-needs the other's address in advance) is accurately described in
-[the CLI reference]({{ '/reference/cli/' | relative_url }}) and
-[Agent-Fabric channels]({{ '/explanation/agent-fabric-channels/' | relative_url }}) but wasn't click-tested
-in this pass — it needs the edge's broker/relay infrastructure, not just two local processes. Flagged
-here rather than silently presented as verified.
+needs the other's address in advance) needs the edge's broker/relay infrastructure, not just two local
+processes — now fully click-tested, including the control-plane registration step direct-address never
+needs: see [Set up a broker-mediated channel]({{ '/how-to/broker-mediated-channel/' | relative_url }}).
