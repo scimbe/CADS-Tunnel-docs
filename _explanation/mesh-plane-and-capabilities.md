@@ -34,8 +34,13 @@ never holds your Origin's key and can't forge or be compelled to hand over what 
 
 `CT_AGENT_CAPABILITY_OUT` (see
 [Environment variables (core tunnel)]({{ '/reference/environment-variables/' | relative_url }})) is
-where your agent writes this file. Its exact wire format, confirmed directly against
-`ct_common::Capability::encode`/`decode` in source:
+where your agent writes this file — not fetched from the control plane, **minted locally**
+(`mint_capability`, source-confirmed) from material the agent already has: a fresh random routing token
+by default, its own Origin identity, and the edge address. The token it picks is simply what gets
+registered in the platform's Tunnel Registry afterward — the agent originates the trust material, the
+operator just records it.
+
+The exact wire format, confirmed directly against `ct_common::Capability::encode`/`decode` in source:
 
 ```
 routing_token (32 bytes) | origin_identity (32 bytes) | addr_len (u32 LE) | edge_addr (addr_len bytes)
