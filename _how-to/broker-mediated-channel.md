@@ -87,6 +87,24 @@ Real log line, actually observed: `ct-agent channel: plane-brokered Accept (rela
 persistent serve: concurrent sessions (#200)` (add `CT_CHANNEL_SERVE=1` to get this parked,
 persistent-serve behavior instead of the default one-shot).
 
+<div class="callout warn">
+What happens when re-admission keeps failing: a persistent <code>--serve</code> loop treats two
+kinds of admission failure very differently (source-verified against
+<code>ct-agent</code>'s <code>channel_run.rs</code> and its passing test suite — real numbers, not
+approximated). A <strong>transient</strong> error (a brief control-plane blip, the <code>#140</code>
+stall) always retries at the fast, unchanged base backoff (200ms in production) — a genuine hiccup
+should recover quickly. A <strong>definitive refusal</strong> — <code>edge broker refused the
+channel join</code>, meaning this holder genuinely isn't a member of the channel and retrying
+won't fix that without an operator adding it — instead backs off <em>exponentially</em>
+(200ms, 400ms, 800ms, ... doubling per consecutive refusal), capped at 30s. This is
+<a href="https://github.com/scimbe/CADS-Tunnel/issues/231">#231</a>: an orphaned process retrying a
+not-member holder at the old flat rate was live-measured at ~24-47 admission attempts/second against
+the production edge — real, sustained load on the edge's admission path from a single stray process.
+If your own persistent serve process seems to have "gone quiet" after a burst of
+<code>admission error, re-admitting (#200)</code> lines, this is very likely why — check that its
+holder is actually still a member of the channel it's presenting a grant for.
+</div>
+
 ```bash
 # Initiate side, in a separate process (a genuinely different container in the real test):
 echo "hello over the real broker" | CT_CHANNEL_ROLE=initiate \
