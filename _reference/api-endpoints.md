@@ -68,6 +68,24 @@ user's join token comes from the portal's Install button instead.
 
 **`POST /enroll/issue`** `{"tenant": "..."}` → `{"token": "..."}`
 
+**`POST /registry/authorize-host/:routing_token/:hostname`** — no body, `200` on success. Proxies to
+the edge's own admin API (loopback-only in production) so a remote pipeline maintainer holding just
+the shared admin token can self-serve host authorization over the public HTTPS control plane, and —
+this is the part that matters — **records** the `(routing_token, hostname)` pair as owned in the
+control plane's own durable registry.
+
+<div class="callout warn">
+This recording is not cosmetic: <code>POST /agent/acme-issuance-complete</code> above checks exactly
+this record before promoting a tunnel to Grün. Calling the edge's raw
+<code>/admin/authorize-host/:token/:host</code> directly (e.g. against a loopback
+<code>CT_CP_EDGE_ADMIN_URL</code>) authorizes the hostname at the edge just as well, but skips this
+recording step entirely — Grün promotion then fails forever with a clean, otherwise-unexplained
+<code>403 "this token is not the recorded owner of this hostname"</code>. Reproduced live, twice, this
+session. Always prefer this control-plane endpoint over the raw edge one; see
+<a href="{{ '/how-to/authorize-a-pipeline-hostname/' | relative_url }}">Authorize a new pipeline
+hostname</a> for the full real-world trap and fix.
+</div>
+
 **`POST /admin/provision-tunnel`** `{"subject": "...", "name": "...", "hostname": "..."}` →
 `{"routing_token": "...", "hostname": "..."}`
 

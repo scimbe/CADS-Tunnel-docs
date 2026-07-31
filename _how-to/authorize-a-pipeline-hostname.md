@@ -68,3 +68,5 @@ through the control plane.
 - [The edge mesh registry]({{ '/explanation/edge-mesh-registry/' | relative_url }}) — what
   ownership recording actually is and why it's a separate, durable, control-plane-side fact instead
   of something the edge tracks on its own.
+- [API endpoints]({{ '/reference/api-endpoints/' | relative_url }}) — the full request/response
+  shapes for `/registry/authorize-host` and every enrollment endpoint alongside it.
