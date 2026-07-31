@@ -100,3 +100,8 @@ For actually establishing those connections, use
 [Set up an Agent-Fabric channel]({{ '/how-to/join-a-channel/' | relative_url }}) or
 [the self-service channel registry]({{ '/reference/api-endpoints/' | relative_url }}) as documented
 elsewhere on this site — both are fully reachable today, unlike the topology-edge path above.
+
+A sibling feature, [Declarative network policy]({{ '/explanation/declarative-network-policy/' | relative_url }})
+(`/me/networks/*`), is in the same position for a different reason: it's a role/sensitivity-based
+access-control *language* rather than a graph you draw, but it lands on the exact same honest caveat —
+a real, tested decision engine with no live enforcement wired to it yet.
