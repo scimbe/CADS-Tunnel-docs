@@ -54,7 +54,7 @@ anything.
 | `--yes` | Skip the interactive direct-host confirmation. Required if running non-interactively (e.g. from a script or CI). |
 | `--docker` | Run as a Docker container instead of directly on the host. |
 | `--template` | Also download and unpack the starter site template into `./template/`. |
-| `--green` | Push straight through to the Grün tier (your own certificate) as part of setup, instead of stopping at Gelb — direct-host only; combined with `--docker` it prints the `docker exec`/`docker cp` commands to run yourself instead of automating it (source-confirmed, `scripts/setup.sh::poll_status`). See [Go from Gelb to Grün]({{ '/how-to/gelb-to-gruen/' | relative_url }}) if you'd rather do this as a separate step later, or need the exact Docker commands. |
+| `--green` | Push straight through to the Grün tier (your own certificate) as part of setup, instead of stopping at Gelb — direct-host only; combined with `--docker` the script prints the `docker exec`/`docker cp` commands to run yourself instead of automating it (source-confirmed, `scripts/setup.sh::poll_status`). See [Go from Gelb to Grün]({{ '/how-to/gelb-to-gruen/' | relative_url }}) if you'd rather do this as a separate step later. |
 
 ## Restarting or re-running
 
