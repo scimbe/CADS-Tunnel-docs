@@ -22,6 +22,15 @@ HTTP-shaped at all: any protocol, including UDP, over a Noise-encrypted session 
 authenticates end-to-end, with no TLS certificate anywhere in the path (no Rot/Gelb/Grün story here —
 that's entirely a Browser Plane concept).
 
+The UDP path specifically is real, not aspirational — `CT_AGENT_ORIGIN_PROTO=udp` (see
+[Environment variables]({{ '/reference/environment-variables/' | relative_url }})) bridges datagrams
+instead of a stream, and both ends are hermetically tested against a real UDP origin, re-confirmed
+passing for this page: `ct-agent`'s `serve_noise_udp_bridges_datagrams_to_origin` on the Agent side, and
+`ct-client`'s `udp_selftest`/`run_bench_udp` on the Client side. Same caveat as everywhere else on this
+page: the Agent side is yours to configure with one env var, but consuming it still needs a Client that
+speaks Mesh Plane's own framing over UDP — there's no browser or `curl` equivalent for this leg any more
+than there is for TCP.
+
 ## The Capability: how a Client gets in, without the operator vouching for anything
 
 A Browser Plane client just needs a public hostname to type into an address bar; a Mesh Plane Client
