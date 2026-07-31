@@ -93,4 +93,10 @@ not necessarily any specific binary this repo ships.
 
 Per ADR-0014: revoking access is rotating the routing token and/or the Origin key — there's no separate
 "Capability revocation" mechanism to reason about, because a Capability's own validity is entirely
-derived from those two things still being live.
+derived from those two things still being live. Concretely:
+
+- **Retire the routing token entirely** (every Capability minted against it stops working, permanently) —
+  [Revoke on your tunnels page]({{ '/how-to/manage-your-tunnel/' | relative_url }}#revoke-a-tunnel).
+- **Rotate just the Origin key** (invalidates Capabilities minted with the old key, without touching the
+  routing token or requiring re-onboarding) — `ct-agent rotate`, in the
+  [CLI reference]({{ '/reference/cli/' | relative_url }}#origin-key-rotation).
