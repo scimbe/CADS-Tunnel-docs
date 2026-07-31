@@ -68,3 +68,17 @@ hostname's validation record, but the certificate authority checked for it befor
 actually propagated to the public nameservers it queries. This is a timing issue, not a configuration
 error — retry the command; it doesn't cost you anything to redo (unlike onboarding, this isn't a
 single-use token).
+
+## Bringing your own certificate instead
+
+`ct-agent certificate` isn't the only path to Grün — strict or air-gapped setups can supply their own
+certificate and key directly instead of running this platform's ACME flow at all. Install your own cert
+(from any CA) on your origin yourself, then tell the platform you're ready:
+
+```bash
+curl -X POST https://<your-cp-url>/agent/acme-issuance-complete/<your-routing-token>/<your-hostname>
+```
+
+See [API endpoints]({{ '/reference/api-endpoints/' | relative_url }}) for what this actually does —
+the control plane doesn't verify a certificate exists, it trusts the routing token and reverts the edge
+to passthrough, genuinely Grün either way.

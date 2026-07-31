@@ -46,6 +46,20 @@ token in the path (no separate header).
 `status` is one of `rot`, `gelb`, `gruen`. `claim_deadline` is set only while a Gelb→Grün claim window is
 open; `null` once the tunnel is permanently Grün or hasn't entered the queue.
 
+**`POST /agent/acme-issuance-complete/:routing_token/:hostname`** — same path-based auth, no body. `200`
+on success. Confirmed live: `403` on a bad token.
+
+<div class="callout">
+This is what actually flips a tunnel to Grün — <code>ct-agent certificate</code> calls it once its own
+Let's Encrypt/ZeroSSL order finishes, but nothing about it is coupled to that specific flow. The
+control plane doesn't verify a certificate exists; it trusts the routing token and reverts the edge to
+passthrough. This is the real, previously-undocumented mechanism behind
+<a href="https://github.com/scimbe/CADS-Tunnel/blob/main/docs/adr/0003-agent-held-certificates.md">ADR-0003</a>'s
+"strict/air-gapped customers may instead supply their own certificate and key directly" — install your
+own cert (from any CA) on your origin yourself, then call this endpoint to tell the platform you're
+ready, and it's genuinely Grün, no ACME order ever run against this deployment.
+</div>
+
 ## Enrollment (admin-gated)
 
 These require `x-ct-admin-token: <CT_CP_EDGE_ADMIN_TOKEN>` — they're for the operator's own tooling
