@@ -65,6 +65,54 @@ half-dead pooled connection surviving a CP restart is exactly the ambiguous "not
 state the fix exists to eliminate; a fresh connection per authorize call fails fast and
 predictably instead.
 
+## Admission is only half the story: you still have to wait for your partner
+
+Passing the authorize check above doesn't connect you to anything by itself — a channel is always
+between exactly two holders, and the edge has to hold your admitted connection until *the other one*
+shows up too. This parking/pairing step, source-grounded in `crates/edge/src/channel_broker.rs`'s
+`ChannelPairer`, is what's actually behind the "waiting to be paired" feeling of a join that doesn't
+immediately connect:
+
+- The first admitted holder of a `(channel)` to arrive is **parked**, holding its connection open.
+- When the *other* holder of that same channel is admitted, the two are paired and handed off to
+  relay together — a same-holder retry instead supersedes its own earlier parked wait rather than
+  pairing with itself.
+- A lone parked holder isn't held forever: it has a deadline (30s), after which it's evicted rather
+  than wedging the slot — this is genuinely why a join can sit for a while and then fail even though
+  your own admission check succeeded cleanly. It just means your channel partner hasn't shown up yet.
+
+<div class="callout warn">
+Found live, fixed same day (2026-07-31, tracked as
+<a href="https://github.com/scimbe/CADS-Tunnel/issues/256">scimbe/CADS-Tunnel#256</a>): that 30s
+eviction deadline only actually fired for the QUIC-native broker (`:4435`), whose own accept loop
+sweeps expired waiters on every iteration. Channel members reaching admission through the
+<code>:443</code> front door instead — see the next section — went through a *separate* pairer with
+no equivalent sweep anywhere, so a lone parked front-door member whose partner never showed up was
+held forever: its TLS stream and socket leaked for the life of the edge process. The front door now
+spawns its own periodic reaper alongside the QUIC broker's per-accept one, so both paths actually
+honor the 30s deadline. Pure resource-leak fix — the pairing/eviction *decision* logic shown above
+was already correct on both paths; only the front door was never actually acting on it.
+</div>
+
+## Two different wires into the same broker
+
+Everything above happens identically regardless of *how* your join physically reached the edge, and
+that's deliberate — but the wire itself comes in two forms:
+
+- **The QUIC-native broker**, on `:4435` (or whatever `CT_CHANNEL_BROKER` port you're pointed at) —
+  the default path, a real QUIC bi-stream per join.
+- **The `:443` front door** — the same admission (length-framed join request, membership + grant
+  verification, holder-possession challenge — byte-for-byte the identical exchange) but carried over
+  TLS-over-TCP instead of QUIC, for a member whose network blocks the broker's UDP/TCP ports outright
+  but still allows ordinary HTTPS egress. It's the same accommodation the browser tunnel's own `:443`
+  termination makes, reused for channels (#106).
+
+Both paths call into the exact same authorize-and-pair logic described on this page — there's no
+second, weaker admission story hiding behind the front door. The only structural difference is which
+`ChannelPairer` instance a given join's parked wait lives in, which is precisely why the reaper gap
+above could exist on one wire and not the other: they're genuinely separate pairing states, not two
+views onto one.
+
 ## What this means if your own channel join gets refused
 
 If you see `edge broker refused the channel join` (or, server-side in the edge's own log,
