@@ -243,6 +243,16 @@ configured <em>and</em> found a usable signing key in the realm's JWKS at boot �
 the whole <code>/me/*</code> surface is silently absent (a plain <code>404</code>, not <code>401</code>),
 not just unauthorized. If you get a 404 here instead of a login-required response, that's what's
 happening, not a wrong path.
+
+<strong>Found live, 2026-08-01</strong> (<a href="https://github.com/scimbe/CADS-Tunnel/issues/328">#328</a>):
+this isn't only a misconfiguration symptom — the JWKS fetch is a one-shot check at boot with no ongoing
+retry, so a <em>correctly</em>-configured deployment that raced Keycloak at exactly the wrong moment
+during its own restart (e.g. Keycloak still warming up) silently loses the entire <code>/me/*</code>
+surface for the rest of that process's life, with no self-healing — confirmed on this very deployment,
+which had worked for hours before a routine restart hit this window. A restart of the control plane
+process (not the whole stack) is the actual fix once this happens; there's currently no way to tell it's
+happening short of an operator noticing the 404s or checking the boot log for <code>CT_OIDC_ISSUER set
+but the realm JWKS had no usable RS256 key after retrying</code>.
 </div>
 
 ## Pipeline registry
