@@ -11,7 +11,22 @@ hand-signing a `CT_CHANNEL_GRANT` for every member and getting it to them out of
 manual round trip *every time* someone new joins, or needs to relaunch after losing their old grant. This
 page is the self-service alternative: the owner allow-lists an e-mail once, and from then on anyone who
 logs into the portal with that verified e-mail can claim their own membership directly — no operator
-action needed for the actual grant, and no grant hex to lose.
+round trip needed to get *added as a member*.
+
+<div class="callout warn">
+What claiming does <strong>not</strong> do, confirmed against the handler source (<code>ClaimResp</code>
+in <code>portal_api.rs</code> carries only <code>claimed: bool</code>, nothing else): it inserts a
+<code>channel_members</code> row, it does not mint or return a <code>CT_CHANNEL_GRANT</code>. The edge's
+broker still cryptographically verifies an operator-signed grant for both sides before pairing a channel
+(<code>channel_broker.rs</code>'s <code>verify(operator_pubkey, ...)</code> on each presented grant) — that
+check is entirely separate from, and unaffected by, the membership row this page's claim flow creates. A
+standard <code>ct-agent channel</code> client still needs a real <code>CT_CHANNEL_GRANT</code> from the
+operator (<code>ct-agent channel grant</code>) after claiming, exactly as before. Live-reproduced
+2026-08-01: a claimed member with no separate grant gets exactly as far as the edge accepting the dial and
+then a connection failure once the peer looks for a grant that was never issued — see
+[Recover a channel when the operator key is lost]({{ '/how-to/recover-lost-channel-operator-key/' | relative_url }})
+for the full, live-verified case this surfaced from.
+</div>
 
 ## 1. The channel owner allow-lists an e-mail
 
