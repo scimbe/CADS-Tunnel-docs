@@ -127,6 +127,22 @@ the two now-distinguished causes read very differently:
   anyone who was already a member moments earlier.
 
 <div class="callout warn">
+A third, separate bug in the same neighborhood, found live and fixed 2026-08-01
+(<a href="https://github.com/scimbe/ct-agent/pull/2">scimbe/ct-agent#2</a>): a persistent
+<code>ct-agent channel --serve</code> process's own retry dispatch — not the edge's admission logic
+above — mis-forwarded a clean <code>Refused</code> verdict as <code>Ok</code> instead of
+<code>Err</code>. That got it spawned as a full session (which then immediately failed there, which
+is why it logged as happening <em>after</em> admission, not during it) and, because the outer loop saw
+<code>Ok</code> not <code>Err</code>, silently reset the exponential backoff #231 added — so a
+holder that will genuinely never be a member could hot-loop hundreds of admission attempts an hour
+against production instead of backing off. Live-verified fixed: before, continuous spawn-then-fail
+cycles with zero successful sessions over 6 hours; after, hours clean with zero repeats. If your
+process logs <code>ct-agent channel: serve session ended with error (#200): edge broker refused the
+channel join</code> repeatedly at a flat, unchanging rate rather than backing off, this is almost
+certainly it — update past this ct-agent commit.
+</div>
+
+<div class="callout warn">
 A gap in the fix's first cut, found live and closed the same day: the transport-class branch (the
 one the fail-static cache exists to tolerate) returned silently — a real CP-unreachable incident
 looked identical to routine operation in the edge's own log. The edge now logs
