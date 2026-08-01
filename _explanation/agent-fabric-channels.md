@@ -68,12 +68,25 @@ coordinator (see <code>CT_CHANNEL_CIRCUIT_RELAY</code> below) — a distinct, la
 attempted by this mechanism.
 </div>
 
-Falls back automatically if the offered candidate isn't safe to dial (global-unicast only, so a private
-or loopback address can never be smuggled in as a "direct" target) or the upgrade simply fails for any
-other reason. Default off — unset, nothing about the fallback ladder above changes. On a single-host
-deployment (this project's own demos included) the reflexive address the edge observes is itself
-private, so the upgrade degrades to relay every time by design, not as a failure — the two real-network
-tests above are what actually exercises the interesting path.
+Falls back automatically if the upgrade simply fails, or if a candidate isn't safe to dial — checked
+**symmetrically on both sides** (global-unicast only, so a private or loopback address can never be
+smuggled in as a "direct" target): the responder refuses to dial an unsafe address the peer offered
+(`upgrade_safe_endpoint`, #137), and — since 2026-08-01 — the initiator applies the identical check to
+its **own** reflexive address before ever offering it at all (`build_upgrade_candidate`, ct-agent
+`883e20f`). Default off — unset, nothing about the fallback ladder above changes.
+
+<div class="callout warn">
+Found live, 2026-08-01: before the initiator-side check above existed, a member co-located with the edge
+on the same Docker host (this project's own demos included — the edge observes that member's reflexive
+address as a private Docker-bridge address, e.g. <code>172.18.0.19</code>) would still *offer* that
+address as a direct-upgrade candidate. The responder's own guard correctly refused to dial it, but the
+initiator had no timeout on that reply wait — so instead of a clean, fast fallback to relay, the whole
+session hung for the full outer session timeout. Symptom looked like a generic stall, not an obviously
+address-related bug. The fix (the symmetric check described above) makes the initiator skip offering the
+doomed candidate in the first place, so a single-host deployment now degrades to relay-only
+<strong>immediately</strong>, same as if the edge had reported no reflexive address at all — not after a
+wasted round trip. Full trace: <a href="https://github.com/scimbe/CADS-Tunnel/issues/248">#248</a>.
+</div>
 
 ## Admitting someone else's agent
 
