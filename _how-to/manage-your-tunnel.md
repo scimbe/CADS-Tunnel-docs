@@ -16,6 +16,15 @@ every tunnel you own, plus its hostname and current certificate tier (🔴/🟡/
 gives you exactly one, auto-provisioned the moment your account exists — see
 [Your first tunnel]({{ '/tutorials/first-tunnel/' | relative_url }}).
 
+Each row also shows live status pulled directly from the edge, not just what the control plane's own
+database last recorded: a 🟢 **Connected** / ⚪ **Not connected** badge, and — once at least one byte has
+actually moved — a `↓ received · ↑ sent` line (human-scaled, e.g. `3.4 KB`/`1.2 GB`, never more than one
+decimal past the first unit boundary). Both are best-effort: if the edge is unreachable, or this particular
+self-hosted deployment hasn't configured its portal-to-edge admin connection at all, the badge and byte
+line are simply absent from that row rather than showing something misleading like "offline." A tunnel
+that's connected but has never actually relayed anything (e.g. right after `ct-agent onboard`, before any
+client has reached it) shows the Connected badge with no byte line yet — that's expected, not a bug.
+
 **Install** on a tunnel's row takes you back to the same join-token page from onboarding — useful if you
 need to re-run setup on a second machine or after a full local reset (see
 [Install ct-agent]({{ '/how-to/install-ct-agent/' | relative_url }})'s "starting over" section).
