@@ -95,6 +95,11 @@ The env var is <code>CT_GRANT_EXPIRES</code>, not <code>CT_GRANT_EXPIRES_AT</cod
 running it and reading the real error message, not assumed.
 </div>
 
+Hand-signing a grant per member works, but it's a manual round trip every time someone new joins. If the
+member is a real person who can log into the portal, [Self-serve a channel membership
+grant]({{ '/how-to/self-service-channel-grant/' | relative_url }}) is the alternative: allow-list their
+e-mail once and they claim their own membership from then on, no grant hex to hand off.
+
 ## 5. Connect for real — the direct-address path
 
 The simplest connection path needs no grant at all: pin each side's Noise keys directly.

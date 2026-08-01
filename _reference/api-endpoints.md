@@ -163,6 +163,52 @@ verify; `403` if you're not the channel's owner.
 **`POST /me/channels/:channel/members/:holder/remove`** — revoke a member, no body. Same `403` if you're
 not the owner.
 
+## Self-service channel allow-list & claim
+
+The self-service alternative to hand-signing a grant for every new member (the flow above, and
+[Set up an Agent-Fabric channel]({{ '/how-to/join-a-channel/' | relative_url }})'s step 4): the owner
+allow-lists an e-mail once, and anyone who logs into the portal with that verified e-mail can claim their
+own membership — no grant hex to generate, sign, or hand off out of band. Full walkthrough:
+[Self-serve a channel membership grant]({{ '/how-to/self-service-channel-grant/' | relative_url }}).
+
+Owner-scoped management, same bearer-token auth as `/me/channels` above:
+
+**`POST /me/channels/:channel/allowlist`** `{"email": "someone@example.com"}` — allow-list an e-mail
+(stored lowercased). `403` if you're not the channel's owner.
+
+**`GET /me/channels/:channel/allowlist`** — list allow-listed e-mails for a channel you own. `{"emails": [...]}`.
+
+**`POST /me/channels/:channel/allowlist/:email/remove`** — de-list an e-mail, no body. Stops a *future*
+claim; does **not** revoke an already-claimed membership (that's still `POST
+/me/channels/:channel/members/:holder/remove` above — allow-listing and membership are deliberately
+separate).
+
+Session-cookie-authed (a real portal login, not a bearer token — this is a browser-facing surface):
+
+**`GET /portal/channels`** — the logged-in session's own "Your Channels" view: every channel the
+session's *verified* e-mail is allow-listed for, each with a Pending/Claimed status. Redirects to
+`/portal` if not logged in; renders a plain-language empty state (not an error) when the session has no
+verified e-mail or no invitations at all.
+
+**`GET /portal/channels/:channel/claim`** — the claim form for one channel (also linked from the row on
+`/portal/channels`).
+
+**`POST /portal/channels/:channel/claim`** `{"holder": "<64 hex>", "noise_pubkey": "<64 hex>", "noise_attestation": "<128 hex>"}`
+— the JSON API a script can call instead of the HTML form (`.../claim-form`, url-encoded, same fields).
+Same `noise_attestation` verification as the owner-driven `/me/channels/:channel/members` above (a
+forged/un-attested key is rejected even though the caller isn't the owner) — the allow-list only
+authorizes *which* e-mail may join, never *what key*. `403` if the session's verified e-mail isn't
+allow-listed for this channel; `401`/redirect if not logged in at all.
+
+<div class="callout warn">
+Live-verified end to end on 2026-08-01: a real portal account, a real channel registered via
+<code>POST /me/channels</code>, the account's own e-mail allow-listed via
+<code>POST /me/channels/:channel/allowlist</code>, the channel showing up as <em>Pending</em> on
+<code>/portal/channels</code>, a real Ed25519-signed Noise attestation submitted through the claim form,
+and the status flipping to <em>Claimed</em> afterward — the exact round trip described above, not just
+read from the handler code. Test channel and account cleaned up afterward.
+</div>
+
 ## Cross-account channel invitations
 
 How [Agent-Fabric channels]({{ '/explanation/agent-fabric-channels/' | relative_url }})' "admitting

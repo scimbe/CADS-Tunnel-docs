@@ -30,6 +30,7 @@ The single most useful fact about each subcommand, since it changes how you'd sc
 | `ct-agent channel join-pipeline-role` | **Yes** — same idea, derived from a published pipeline's role instead of a pairwise link, exits. |
 | `ct-agent channel grant` | **Yes** — as the operator, signs a member's grant and prints it, exits. |
 | `ct-agent channel register` | **Yes** — registers the operator's channel authority with the control plane, exits. |
+| `ct-agent channel allowlist add\|remove\|list [email]` | **Yes** — manages a channel's self-service e-mail allow-list against the control plane, exits. |
 | `ct-agent channel agent-card` | **Yes** — writes the signed AgentCard (and auto-registers it with `/registry/agents` if the right env vars are set), exits. |
 | `ct-agent channel agent-card --verify <file>` | **Yes** — re-verifies a card's signature and expiry, prints the result, exits non-zero on failure. |
 | `ct-agent channel` (no further subcommand) | **No** — joins/serves a channel, runs indefinitely. |
@@ -63,3 +64,22 @@ These back the Agent-Fabric / MCP layer — see the
 what they enable, and
 [Environment variables (channels, cards, offers)]({{ '/reference/channel-environment-variables/' | relative_url }})
 for every `CT_CHANNEL_*`/`CT_AGENT_CARD_*`/`CT_AGENT_OFFER_*` variable these commands read.
+
+## `channel allowlist` — self-service, no grant hex to hand out
+
+```bash
+CT_AGENT_CP_URL=https://your-cp \
+CT_GRANT_CHANNEL=<64 hex channel id> \
+CT_OIDC_TOKEN=<your OIDC bearer token, channel owner only> \
+./ct-agent channel allowlist add someone@example.com
+```
+
+Same three env vars (`CT_AGENT_CP_URL`/`CT_GRANT_CHANNEL`/`CT_OIDC_TOKEN`) as `channel register` — this
+is the CLI counterpart to the portal web UI's allow-list management, hitting the same owner-scoped
+`/me/channels/:channel/allowlist` routes (see
+[Self-service channel allow-list & claim]({{ '/reference/api-endpoints/#self-service-channel-allow-list--claim' | relative_url }})).
+`add`/`remove` take one email argument and print a confirmation to stderr; `list` takes none and prints
+every currently-allow-listed address to stdout, one per line (or `channel <id> has no allow-listed
+emails` on stderr when empty) — pulled directly from `main.rs`'s dispatch, not run live against the
+production control plane for this pass. Full walkthrough:
+[Self-serve a channel membership grant]({{ '/how-to/self-service-channel-grant/' | relative_url }}).
