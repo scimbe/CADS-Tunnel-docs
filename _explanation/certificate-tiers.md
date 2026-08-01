@@ -37,9 +37,22 @@ private key for. If that distinction matters for your use case, that's what Grü
 
 Your tunnel gets its own, individually-issued certificate (`ct-agent certificate` — see
 [Go from Gelb to Grün]({{ '/how-to/gelb-to-gruen/' | relative_url }})), obtained via ACME/DNS-01 against
-a real CA (Let's Encrypt or ZeroSSL, depending on current CA rotation and headroom). Once issued, the
-edge stops terminating TLS on the platform's shared certificate for your hostname and instead passes the
-connection through to your own origin, which now terminates TLS with its own certificate.
+a real CA. Once issued, the edge stops terminating TLS on the platform's shared certificate for your
+hostname and instead passes the connection through to your own origin, which now terminates TLS with
+its own certificate.
+
+<div class="callout warn">
+As of 2026-08-01, every new hostname is assigned Let's Encrypt specifically — ZeroSSL and Google Trust
+Services were deliberately pulled from the assignable rotation (operator decision,
+<a href="https://github.com/scimbe/CADS-Tunnel/issues/262">#262</a>). Both require an EAB (External
+Account Binding) credential, and the admission broker discloses that credential to every agent it
+assigns to that CA — one fixed, operator-wide secret shared across every mutually-untrusted customer on
+the platform, not scoped per tenant. Let's Encrypt needs no EAB at all, closing that exposure for every
+hostname assigned going forward. This doesn't retroactively change anything already issued — a handful
+of already-live hostnames (including this project's own demo tunnels) are still assigned ZeroSSL from
+before this change and keep renewing against it; migrating them off is a separate, deliberately
+unhurried piece of work, not something this change forces.
+</div>
 
 ## The Gelb→Grün admission queue
 
