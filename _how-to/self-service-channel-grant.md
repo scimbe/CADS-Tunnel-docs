@@ -54,6 +54,15 @@ session's own verified sign-in e-mail. A channel not yet claimed shows a **Pendi
 link; the portal never shows another subject's invitations — the query is keyed to exactly the logged-in
 session's own e-mail, nothing else.
 
+<div class="callout">
+Portal login is one of the endpoints this whole page depends on — if login itself fails on a
+self-hosted deployment, check <code>GET /status</code>'s <code>oidc_enabled</code> field
+(see <a href="{{ '/reference/api-endpoints/#status-and-network-info' | relative_url }}">API
+endpoints</a>) before assuming a misconfiguration. <code>false</code> means the control plane's
+own OIDC verifier isn't up right now — a known, recurring boot-race, not something wrong with
+your allow-list or claim.
+</div>
+
 ## 3. Generate key material locally
 
 Same primitive [Set up an Agent-Fabric channel]({{ '/how-to/join-a-channel/' | relative_url }})'s step 1

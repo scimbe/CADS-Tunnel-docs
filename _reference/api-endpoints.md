@@ -11,8 +11,39 @@ not written from the source alone.
 
 ## Status and network info
 
-**`GET /status`** — no auth. Aggregated operator counts (tunnels, agents, published pipelines,
-discoverable agents, uptime, readiness). This is what the landing page's live status section polls.
+**`GET /status`** — no auth. Aggregated operator counts, captured live:
+
+```json
+{
+  "ready": true,
+  "tunnels": 5,
+  "agents": 17,
+  "accounts": 9,
+  "payments_confirmed": 0,
+  "pipelines_published": 2,
+  "agents_directory": 8,
+  "uptime_seconds": 1830,
+  "oidc_enabled": true
+}
+```
+
+`ready` is the same DB-reachability signal as `/readyz`. `agents` counts raw join-token
+redemptions; `agents_directory` is the distinct, smaller count of agents that separately opted
+into `POST /registry/agents`'s public searchable directory (see
+[Publish an agent card]({{ '/how-to/publish-an-agent-card/' | relative_url }})) — a self-hosted
+deployment can have real enrolled agents and still show `agents_directory: 0` if none of them
+ever registered.
+
+`oidc_enabled` (added 2026-08-01) is what actually answers "is `/me/*` up right now" without
+grepping boot-time logs: `false` covers both `CT_OIDC_ISSUER` being unset *and* it being set but
+the boot-time JWKS fetch never finding a usable key — both mean the same thing for `/me/*`'s
+current availability. This field exists specifically because that failure mode is real and has
+recurred live on this deployment more than once: a routine control-plane restart occasionally
+races Keycloak's own readiness and comes up with `/me/*` silently 404ing instead of the expected
+401, invisible anywhere except this field (or a manual `/me/account` probe) until the next
+restart clears it. If you self-host with SSO and see `oidc_enabled: false` unexpectedly, a
+control-plane restart (`docker compose restart control-plane`) is the known recovery; there's no
+self-healing background retry yet.
 
 **`GET /network-info`** — no auth.
 
