@@ -72,13 +72,16 @@ Honesty is part of the pitch — this site doesn't fold "designed but not yet li
 sentence as what's actually running. Two things worth being explicit about, since they're easy to
 overstate by analogy to mesh VPNs' NAT-to-NAT hole-punching:
 
-- **NAT-to-NAT direct upgrade is real code, not yet a live capability.** `ct-agent` carries a genuine
-  libp2p DCUtR hole-punch path that can upgrade a relayed Agent-Fabric session to a direct one — but
-  it's validated against exactly one lab NAT topology, and the libp2p Circuit-Relay v2 server it
-  depends on has never been wired to this platform's live edge (deliberately — the project's own
-  membership-gating work for a safe public relay isn't finished). Every live Agent-Fabric session
-  today either connects directly (both sides have a real dialable address) or stays on the edge
-  relay/`:443` front door for its whole lifetime — never a mid-session NAT-to-NAT punch.
+- **NAT-to-NAT relaying through a gated Circuit-Relay v2 node is live** (`CT_CHANNEL_RELAY_GATE`,
+  see [the environment variable reference]({{ '/reference/channel-environment-variables/' | relative_url }})) —
+  confirmed with two genuinely separate real members on separate networks, both sides NAT'd, no lab
+  topology: grant + possession pre-auth against the edge, then a real reservation and circuit
+  accepted on an internal, network-isolated relay-node, then a real Noise session and a real
+  application reply carried over it. **What's still unconfirmed**: the further DCUtR *direct
+  upgrade* — cutting the session over to a bare peer-to-peer link that bypasses the relay-node too,
+  not just the edge relay. Every live session confirmed so far completed over the relay-node's
+  circuit; none has shown a completed hole-punch handoff yet. So: real NAT-to-NAT reachability via a
+  gated relay hop, not yet a confirmed zero-relay direct link.
 - **Anonymity, censorship resistance, and immunity from lawful process** are explicitly not claimed —
   see [Zero-knowledge architecture]({{ '/explanation/zero-knowledge/' | relative_url }})'s own "What
   zero-knowledge does *not* mean" section. Accounts are conventional Keycloak/OIDC; the honest claim

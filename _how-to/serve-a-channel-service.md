@@ -116,6 +116,23 @@ source-confirmed (<code>should_serve_loop</code>, gated on accept-side + serve m
 `ct-agent`'s own test suite, including a dedicated regression test that admits five concurrent peers
 while one session is deliberately kept slow.
 
+## Serving from behind NAT (no dialable address of your own)
+
+Everything above assumes you can either accept a direct dial or fall back to the plain edge
+relay. If you're behind NAT with no address to advertise at all, add two more variables to
+your `CT_CHANNEL_SERVE=1` config: `CT_CHANNEL_RELAY_ONLY=1` and `CT_CHANNEL_RELAY_GATE`
+(+ `CT_CHANNEL_RELAY_GATE_CERT`) — see [the environment variable
+reference]({{ '/reference/channel-environment-variables/' | relative_url }}) for exact values
+and what they do. This is a real, deployed path (not a lab-only feature): grant + possession
+pre-auth against the edge, then relayed through an internal, network-isolated relay-node —
+live-confirmed working between two genuinely separate, both-NAT'd real members.
+
+**Both members of the pair must set this**, not just the one behind NAT — a member that
+doesn't will stay on the plain edge relay, which is a real protocol mismatch with a peer that
+does set it, not a graceful fallback. If you set up a service and calls into it fail
+immediately after a connection attempt with no clear reason, check whether your caller and
+your `--serve` process actually agree on this.
+
 ## Building a real pipeline role from this
 
 A crew bridge's `CREW_<ROLE>_CMD` (or `COOKBOOK_<ROLE>_CMD`) is exactly the command from step 4 —
