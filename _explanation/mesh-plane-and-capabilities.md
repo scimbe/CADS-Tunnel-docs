@@ -14,6 +14,11 @@ Leave `CT_AGENT_MODE` unset and `ct-agent` runs **Mesh Plane** instead — the m
 prioritized first, specifically because Browser Plane "structurally leaks the hostname to the operator"
 via TLS SNI. Mesh Plane doesn't.
 
+Browser Plane and an [Agent-Fabric channel]({{ '/explanation/agent-fabric-channels/' | relative_url }})
+are not mutually exclusive — see
+[Serve a tunnel and a channel together]({{ '/how-to/tunnel-plus-channel/' | relative_url }}) for running
+both on the same service, as two independent `ct-agent` processes.
+
 ## What's actually different
 
 Mesh Plane routes by an **opaque routing token**, not a hostname the operator's edge has to read to

@@ -10,8 +10,8 @@ Every other explanation page on this site covers a fixed shape: one tunnel, one 
 pipeline. The Topology Editor (`/me/topologies/*`) is different — it lets you compose your **own**
 agents (yours, or ones shared to you) into a named graph, view it as a draggable node-graph, and get
 algorithmic suggestions for how to wire it. Source-grounded throughout (`crates/control-plane/src/
-topology.rs`, `service.rs`'s `authed_topology_router`), and re-run hermetically for this page — 17/17
-topology tests passing right now.
+topology.rs`, `service.rs`'s `authed_topology_router`), and re-run hermetically for this page — 22/22
+topology tests passing right now (`cargo test -p ct-control-plane --lib topology`).
 
 ## Creating one, and what a "node" actually is
 
@@ -81,27 +81,60 @@ and `b`, derived the same way [`channel_id_for_link`]({{ '/how-to/join-a-channel
 already computes it elsewhere on this site. Remove the edge and the authorization is gone too — "no
 per-channel bookkeeping," straight from the source comment.
 
-<div class="callout warn">
-<strong>But only for a topology bound to a real channel operator key</strong> — and there is currently
-no HTTP route to do that binding. <code>storage.rs::set_operator</code> exists, is proof-of-possession
-gated, and is exercised by a real passing test
-(<code>topology_operator_binding_is_owner_scoped_authenticated_and_drives_authorized_channels</code>)
-— but grepped every route registered in <code>service.rs</code>'s <code>authed_topology_router</code>
-and found no endpoint that calls it. An unbound topology "authorizes nothing" (the source's own
-words). So today: draw all the edges you like, but until an operator-binding endpoint ships, they
-don't yet grant real channel admission for anyone — the enforcement logic is real and tested, the way
-to actually reach it from outside the control plane isn't there yet.
+<div class="callout">
+<strong>Updated — the binding route now exists.</strong> <code>PUT /me/topologies/:id/operator
+{"operator_pubkey", "proof"}</code> is a real, owner-scoped route (checked directly in
+<code>service.rs</code>'s <code>authed_topology_router</code>, handler <code>topology_set_operator</code>):
+<code>proof</code> is a signature over <code>topology_operator_binding_bytes</code>, proving you actually
+control the operator key's private half, not just its public bytes — a bad proof or a non-owner
+topology both come back as the same <code>404</code>, so probing a topology id learns nothing either
+way. Once bound, drawn edges genuinely do authorize real channel admission through
+<code>authorized_channels</code>/<code>topology_authorizes</code> as described above — this used to be
+the honest caveat on this page ("no route to bind an operator"); it no longer applies.
 </div>
+
+## Composing with others: super-peers, sharing, and channel link-info
+
+Three additive capabilities on top of the base graph above — none of them change the exclusive-membership
+or edge-authorization rules already described, they extend what a node or an edge can *carry*.
+
+**Super-peer nodes.** `POST /me/topologies/:id/agents {"agent": "...", "kind": "super-peer"}` (or
+`"peer"`, the default) marks a node's role — rendered in the editor with a distinct border and an "SP"
+badge. This is purely a rendering/informational hint: the graph's actual admission semantics are
+unchanged by it, a super-peer node is still just an agent id in the edge graph. The real, running process
+that hint describes is [`ct-agent channel super-peer`]({{ '/how-to/run-a-super-peer/' | relative_url }})
+— mark the node here, then bring up the real relay separately.
+
+**Sharing a topology by e-mail.** A topology is, by default, visible and editable only by its owning
+subject. `POST /me/topologies/:id/share {"email": "..."}` (owner-only) additively grants another Keycloak
+account — matched by their own verified sign-in e-mail, same convention as
+[channel allow-listing]({{ '/how-to/self-service-channel-grant/' | relative_url }}) — the ability to
+**view** the topology and wire in **their own** agents/edges via `GET /me/topologies/shared` and the
+editor itself, but never owner-only governance (delete, operator-bind, or manage the share list). Remove
+with `POST /me/topologies/:id/share/:email/remove`. The editor's own share panel (visible only to the
+owner) lists current collaborators and offers add/remove inline.
+
+**Explicit edge -> channel association.** `PUT /me/topologies/:id/edges/channel {"a", "b", "channel": "<hex, or omit to clear>"}`
+lets you attach a real, already-registered channel id to a specific edge as link info the editor
+displays — validated as a channel you own or are allow-listed on (`channels_for_email`, the same account
+relationship [Set up an Agent-Fabric channel's self-service claim]({{ '/how-to/self-service-channel-grant/' | relative_url }})
+uses), not channel membership itself. This is purely informational/documentation on the edge — it is
+never consulted by `authorized_channels`/`topology_authorizes`, which still only ever derive the
+authorized channel from the edge's two node ids as described above. Use it to record "this edge is
+carrying that pre-existing channel" for anyone reading the graph, including the
+[tunnel-plus-channel]({{ '/how-to/tunnel-plus-channel/' | relative_url }}) case where the channel behind
+an edge is also serving something over a Browser-Plane tunnel.
 
 ## Should you use this today?
 
-For visualizing and planning which of your agents should talk to whom — yes, it's real and working.
-For actually establishing those connections, use
-[Set up an Agent-Fabric channel]({{ '/how-to/join-a-channel/' | relative_url }}) or
-[the self-service channel registry]({{ '/reference/api-endpoints/' | relative_url }}) as documented
-elsewhere on this site — both are fully reachable today, unlike the topology-edge path above.
+For visualizing and planning which of your agents should talk to whom, composing with a collaborator, and
+(once operator-bound) actually authorizing the channels behind your declared edges — yes, all of the
+above is real and working. For the mechanics of bringing up the channels/tunnels/super-peers a topology
+describes, see [Set up an Agent-Fabric channel]({{ '/how-to/join-a-channel/' | relative_url }}),
+[Run a super-peer]({{ '/how-to/run-a-super-peer/' | relative_url }}), and
+[Serve a tunnel and a channel together]({{ '/how-to/tunnel-plus-channel/' | relative_url }}).
 
 A sibling feature, [Declarative network policy]({{ '/explanation/declarative-network-policy/' | relative_url }})
-(`/me/networks/*`), is in the same position for a different reason: it's a role/sensitivity-based
-access-control *language* rather than a graph you draw, but it lands on the exact same honest caveat —
-a real, tested decision engine with no live enforcement wired to it yet.
+(`/me/networks/*`), is in a similar position for a different reason: it's a role/sensitivity-based
+access-control *language* rather than a graph you draw, and (unlike the topology-edge path above) still
+has no live enforcement wired to it as of this writing.
