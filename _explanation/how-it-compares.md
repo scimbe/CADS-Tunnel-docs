@@ -89,6 +89,8 @@ overstate by analogy to mesh VPNs' NAT-to-NAT hole-punching:
 
 ## Related
 
+- [What CADS-Tunnel is, and why]({{ '/explanation/what-and-why/' | relative_url }}) — the same
+  proof-backed approach applied to CADS-Tunnel on its own, not against the landscape.
 - [Agent-Fabric channels]({{ '/explanation/agent-fabric-channels/' | relative_url }}) — the mechanism
   this page's "agent-to-agent addressing" row is about, in depth.
 - [Workflow pipelines and the crew auction]({{ '/explanation/workflow-pipelines/' | relative_url }}) —
