@@ -102,8 +102,9 @@ guess.
 
 The "stays parked, serves whoever dials next" behavior is real — it's just gated on
 <strong>broker-mediated</strong> mode (<code>CT_CHANNEL_BROKER</code>/<code>CT_CHANNEL_RELAY</code>, see
-[Set up a broker-mediated channel]({{ '/how-to/broker-mediated-channel/' | relative_url }})), not
-direct-address. An accept-side member with <code>CT_CHANNEL_SERVE=1</code> there parks, serves a peer,
+[Set up a broker-mediated channel]({{ '/how-to/broker-mediated-channel/' | relative_url }}), or
+[Serve your own service, solo]({{ '/how-to/serve-your-own-service-solo/' | relative_url }}) if you don't
+have a known second party to derive a channel id against yet), not direct-address. An accept-side member with <code>CT_CHANNEL_SERVE=1</code> there parks, serves a peer,
 and loops back to admit the next automatically — no external restart loop needed, and (per a later
 hardening pass) admits a new peer even while a slow session is still in flight, rather than waiting for
 it to finish first. This is exactly what a crew bridge dials repeatedly in production.

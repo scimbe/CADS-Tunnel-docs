@@ -131,6 +131,9 @@ deployed topology with the members on different hosts never hits this.
 
 ## Related
 
+- [Serve your own service, solo]({{ '/how-to/serve-your-own-service-solo/' | relative_url }}) — this
+  same sequence, adapted for when you're both the operator and the only member so far, with no known
+  second party to derive a channel id against.
 - [Set up an Agent-Fabric channel]({{ '/how-to/join-a-channel/' | relative_url }}) — the
   direct-address path this one complements.
 - [How the edge decides whether to admit a channel join]({{ '/explanation/channel-admission/' | relative_url }})

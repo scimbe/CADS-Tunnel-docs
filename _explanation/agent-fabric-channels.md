@@ -19,8 +19,21 @@ you already know the other agent's reachable address. No broker involved at all.
 
 **Broker-mediated** (`CT_CHANNEL_BROKER`, `CT_CHANNEL_RELAY`, plus either `CT_CHANNEL_LISTEN` or
 `CT_CHANNEL_RELAY_ONLY=1`): for the common case where you don't have a stable, dialable address for the
-peer — most agents behind NAT or a firewall. The edge's broker helps two agents that have never directly
-communicated find and verify each other.
+peer — most agents behind NAT or a firewall, and what persistent `--serve` actually uses in production.
+The edge's broker helps two agents that have never directly communicated find and verify each other.
+
+<div class="callout warn">
+The two modes differ in one way worth internalizing before anything else: direct-address needs no
+control plane at all. Broker-mediated is <strong>never</strong> offline-only — every single join calls
+the control plane's <code>/internal/channel/authorize</code>, whose durable <code>channel_members</code>
+table is the sole source of truth (the edge itself holds no membership state). A correctly-signed
+<code>CT_CHANNEL_GRANT</code> is necessary but not sufficient on this path; skipping
+<code>channel register</code> + the membership registration is the single most common reason a
+broker-mediated join is refused despite a valid grant. See
+[How the edge decides whether to admit a channel join]({{ '/explanation/channel-admission/' | relative_url }})
+for the full picture, and [Serve your own service, solo]({{ '/how-to/serve-your-own-service-solo/' | relative_url }})
+if you're setting up persistent serve without a pipeline or a known second party yet.
+</div>
 
 <figure>
 <img src="{{ '/assets/img/usecase-mcp.png' | relative_url }}" alt="The landing page's MCP section, showing an animated diagram of two agents connecting directly with a relay fallback path, plus a diagram of the public agent registry.">
