@@ -129,8 +129,11 @@ an edge is also serving something over a Browser-Plane tunnel.
 
 For visualizing and planning which of your agents should talk to whom, composing with a collaborator, and
 (once operator-bound) actually authorizing the channels behind your declared edges — yes, all of the
-above is real and working. For the mechanics of bringing up the channels/tunnels/super-peers a topology
-describes, see [Set up an Agent-Fabric channel]({{ '/how-to/join-a-channel/' | relative_url }}),
+above is real and working. Task-oriented walkthrough of the whole flow above, end to end:
+[Compose a topology]({{ '/how-to/compose-a-topology/' | relative_url }}); every endpoint's exact
+request/response shape: [Topology API]({{ '/reference/topology/' | relative_url }}). For the mechanics
+of bringing up the channels/tunnels/super-peers a topology describes, see
+[Set up an Agent-Fabric channel]({{ '/how-to/join-a-channel/' | relative_url }}),
 [Run a super-peer]({{ '/how-to/run-a-super-peer/' | relative_url }}), and
 [Serve a tunnel and a channel together]({{ '/how-to/tunnel-plus-channel/' | relative_url }}).
 
