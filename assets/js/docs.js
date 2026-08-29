@@ -104,4 +104,28 @@
    });
   });
  }
+
+ // ---- Copy-to-clipboard on every code block. A shell one-liner or .env block is
+ // the worst thing to hand-select (multi-line, trailing backslashes) -- a lost or
+ // mangled character from a manual drag-select breaks the copied command silently,
+ // exactly the class of problem a maintainer hit live while following this site's
+ // own instructions before this existed. ----
+ if (navigator.clipboard) {
+  content.querySelectorAll('pre > code').forEach(function (code) {
+   var pre = code.parentElement;
+   var btn = document.createElement('button');
+   btn.className = 'copy-btn';
+   btn.type = 'button';
+   btn.textContent = 'Copy';
+   btn.setAttribute('aria-label', 'Copy code to clipboard');
+   btn.addEventListener('click', function () {
+    navigator.clipboard.writeText(code.textContent).then(function () {
+     btn.textContent = 'Copied';
+     btn.classList.add('copied');
+     setTimeout(function () { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 1500);
+    });
+   });
+   pre.appendChild(btn);
+  });
+ }
 })();
