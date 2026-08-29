@@ -171,6 +171,24 @@ still come back <code>404</code> when you actually use it against <code>/me/*</c
 itself is down; the token being valid and the endpoint being reachable are two different things.
 </div>
 
+## Service accounts (M2M credentials)
+
+Owner-scoped, same bearer-token auth as everywhere else on this page. Full walkthrough:
+[Create a service account]({{ '/how-to/create-a-service-account/' | relative_url }}).
+
+**`POST /me/service-accounts`** `{"name": "..."}` — mint a new `client_id`/`secret` pair (up to 50 per
+account). `secret` is returned exactly once, here — never again, not even by the `GET` below.
+
+**`GET /me/service-accounts`** — list your service accounts (`client_id`, `name`, `created_at`) — never
+includes a secret.
+
+**`POST /me/service-accounts/:client_id/rotate`** — mint a fresh secret for the same `client_id`; the old
+one stops working immediately. `404` if you don't own `client_id` (indistinguishable from "doesn't
+exist").
+
+**`DELETE /me/service-accounts/:client_id`** — permanently delete the credential. Same owner-scoped `404`
+as rotate.
+
 ## Self-service channel registry
 
 The HTTP surface behind `ct-agent channel register` (see
