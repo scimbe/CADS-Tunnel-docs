@@ -29,6 +29,7 @@ The single most useful fact about each subcommand, since it changes how you'd sc
 | `ct-agent channel member-material` | **Yes** — computes and prints what a member hands their operator, exits. |
 | `ct-agent channel join-pipeline-role` | **Yes** — same idea, derived from a published pipeline's role instead of a pairwise link, exits. |
 | `ct-agent channel grant` | **Yes** — as the operator, signs a member's grant and prints it, exits. |
+| `ct-agent login` | **Yes** — runs the OIDC device-code flow, saves the resulting token, exits. |
 | `ct-agent channel register` | **Yes** — registers the operator's channel authority with the control plane, exits. |
 | `ct-agent channel allowlist add\|remove\|list [email]` | **Yes** — manages a channel's self-service e-mail allow-list against the control plane, exits. |
 | `ct-agent channel agent-card` | **Yes** — writes the signed AgentCard (and auto-registers it with `/registry/agents` if the right env vars are set), exits. |
@@ -57,6 +58,26 @@ Re-mints the capability under the *same* routing token with a new origin key, re
 `CT_AGENT_ORIGIN_KEY_DIR`. Restart the agent (with that directory set) to serve both the new and the
 still-retiring old identity during the handover window.
 
+## Logging in (`ct-agent login`)
+
+`channel register`/`channel allowlist` need an OIDC bearer token proving who the channel owner is.
+Rather than obtaining one by hand and setting `CT_OIDC_TOKEN` yourself every time, log in once:
+
+```bash
+CT_OIDC_ISSUER=https://auth.bunsenbrenner.org/realms/ct-demo ./ct-agent login
+```
+
+An [RFC 8628](https://www.rfc-editor.org/rfc/rfc8628) device-code flow: prints a URL and a short code,
+you authorize in any browser (doesn't have to be the same machine), and the token is stored locally —
+`channel register`/`allowlist` pick it up automatically from then on, refreshing it before it expires.
+`CT_OIDC_TOKEN` set explicitly in the environment still always takes priority, so nothing changes for a
+script that already sets it. Full reference: `docs/channel.md` in the
+[`ct-agent` repo](https://github.com/scimbe/ct-agent/blob/main/docs/channel.md#getting-the-oidc-bearer-token-ct-agent-login).
+
+**Using the portal instead of the CLI for channels?** You don't need `ct-agent login` at all — see
+[Manage a channel from the portal]({{ '/how-to/manage-a-channel-from-the-portal/' | relative_url }}),
+which authenticates via your browser session instead.
+
 ## The `channel` subcommands
 
 These back the Agent-Fabric / MCP layer — see the
@@ -74,8 +95,9 @@ CT_OIDC_TOKEN=<your OIDC bearer token, channel owner only> \
 ./ct-agent channel allowlist add someone@example.com
 ```
 
-Same three env vars (`CT_AGENT_CP_URL`/`CT_GRANT_CHANNEL`/`CT_OIDC_TOKEN`) as `channel register` — this
-is the CLI counterpart to the portal web UI's allow-list management, hitting the same owner-scoped
+Same env vars as `channel register` — `CT_OIDC_TOKEN` here is optional if you've already run
+`ct-agent login` (see above); shown explicit above only to keep the example self-contained. This is the
+CLI counterpart to the portal web UI's allow-list management, hitting the same owner-scoped
 `/me/channels/:channel/allowlist` routes (see
 [Self-service channel allow-list & claim]({{ '/reference/api-endpoints/#self-service-channel-allow-list--claim' | relative_url }})).
 `add`/`remove` take one email argument and print a confirmation to stderr; `list` takes none and prints
