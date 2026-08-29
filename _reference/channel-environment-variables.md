@@ -45,7 +45,10 @@ distinct set of variables from the ones above. Source-grounded against
 
 | Variable | Meaning |
 |---|---|
-| `CT_OIDC_TOKEN` | `channel register` only: your OIDC bearer token, identifying the owning subject to the control plane. Minted the same way as for the other self-service `/me/*` calls. |
+| `CT_OIDC_TOKEN` | `channel register`/`channel allowlist`: your OIDC bearer token, identifying the owning subject to the control plane. Optional if you've already run `ct-agent login` (see [CLI commands]({{ '/reference/cli/' | relative_url }})) — that token is used automatically when this is unset; explicit here always wins. |
+| `CT_OIDC_ISSUER` | `ct-agent login` only: the Keycloak realm URL, e.g. `https://auth.bunsenbrenner.org/realms/ct-demo`. |
+| `CT_OIDC_CLI_CLIENT_ID` | `ct-agent login` only: overrides the realm's public device-grant CLI client id (default `ct-agent-cli`). |
+| `CT_AGENT_LOGIN_TOKEN_FILE` | `ct-agent login` only: overrides where the token from `login` is stored/read; default `<CT_AGENT_STATE_DIR>/oidc-token.json`, else `$HOME/.ct-agent/oidc-token.json`. |
 | `CT_GRANT_CHANNEL` | `channel grant`/`channel register`: the channel id, 64 hex. |
 | `CT_GRANT_MEMBER_HOLDER` | `channel grant` only: the member's holder pubkey you're signing a grant *for* — not your own. |
 | `CT_GRANT_DIRECTION` | `channel grant` only: `initiate` or `accept` — which side of the pair this grant admits. One grant per member, opposite directions. |
