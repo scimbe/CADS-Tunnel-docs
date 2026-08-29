@@ -17,14 +17,16 @@ task-oriented walkthrough.
 
 Every command and endpoint below is checked directly against the source
 (`crates/control-plane/src/service.rs`, `topology.rs`, `storage.rs`) and the 28/28 passing
-`cargo test -p ct-control-plane --lib topology` suite, re-run for this page. The two public,
+`cargo test -p ct-control-plane --lib topology` suite, re-run for this page. The public,
 unauthenticated checks (`GET /net/<uuid>` on an unknown id, `GET /portal/topologies` when
-logged out) were confirmed live against `https://bunsenbrenner.org`; the authenticated
-`/me/topologies/*` steps were not click-tested end to end this pass (no portal login was
-available while writing this) — they're the same discipline as
-[API endpoints]({{ '/reference/api-endpoints/' | relative_url }})'s "Honest gap" callouts:
-source- and test-grounded, not yet re-confirmed live. If you hit a mismatch, the source file
-and line above is the fastest way to check what actually changed.
+logged out) and steps 1 and 4 below (creating a topology, the unbound operator panel) were
+click-tested live against `https://bunsenbrenner.org` with a real portal login — screenshots
+below are from that pass, not mockups. Steps 2/3/5 (assigning agents, drawing an edge, the
+public status page with real content) still rest on source + the passing test suite rather
+than a fresh click-through — the same discipline as
+[API endpoints]({{ '/reference/api-endpoints/' | relative_url }})'s "Honest gap" callouts. If
+you hit a mismatch, the source file and line above is the fastest way to check what actually
+changed.
 
 You need agents of your own first — [Set up an Agent-Fabric channel]({{ '/how-to/join-a-channel/' | relative_url }})
 covers generating a `ct-agent` identity if you don't have one yet. A topology just wires
@@ -51,6 +53,11 @@ curl -X POST https://bunsenbrenner.org/me/topologies \
 unguessable id that keys its public status page (step 5) — two different identifiers on
 purpose, so sharing the read-only status link never exposes the id you'd need to edit the
 graph.
+
+<figure>
+<img src="{{ '/assets/img/topologies-list.png' | relative_url }}" alt="The portal's 'Your topologies' page: a New topology button, an empty 'Owned by you' list, and an empty 'Shared with you' list.">
+<figcaption>Nothing here yet — clicking <strong>New topology</strong> creates one and redirects straight into its editor, the same <code>POST /me/topologies</code> call shown above.</figcaption>
+</figure>
 
 ## 2. Assign your agents into it
 
@@ -121,7 +128,14 @@ CT_TOPOLOGY_ID=<this topology's id> \
 
 This prints two hex lines: `operator_pubkey` (64 hex) and `proof` (128 hex). Paste them into
 the editor's **Bind an operator key** panel (below the canvas, visible only to the topology's
-owner, only while unbound) and click **Bind**. Equivalently:
+owner, only while unbound) and click **Bind**.
+
+<figure>
+<img src="{{ '/assets/img/topology-editor-unbound.png' | relative_url }}" alt="The Topology Editor on a brand-new topology: header chips reading 0 agents, 0 links, operator: not bound, an 'Add your first agent to get started' guide strip, an empty canvas, and — below it — the 'Bind an operator key' panel with operator_pubkey and proof input fields and a Bind button, plus the exact commands to produce them.">
+<figcaption>This is the panel <a href="https://github.com/scimbe/CADS-Tunnel/issues/698">#698</a> added — it's below the canvas, not inside it, which is easy to miss the first time (the whole reason this page exists). It disappears once bound; it never nags you again after that.</figcaption>
+</figure>
+
+Equivalently:
 
 ```bash
 curl -X PUT https://bunsenbrenner.org/me/topologies/<id>/operator \
