@@ -29,6 +29,13 @@ client has reached it) shows the Connected badge with no byte line yet — that'
 need to re-run setup on a second machine or after a full local reset (see
 [Install ct-agent]({{ '/how-to/install-ct-agent/' | relative_url }})'s "starting over" section).
 
+## Rename a tunnel
+
+Each row has a **Rename** form — it only changes the display label shown here and in the portal's other
+tunnel pickers (e.g. the topology editor's tunnel dropdown), not the hostname or routing token, so
+renaming never breaks anything already pointing at your tunnel. Owner-scoped like every other action on
+this page; a blank name is rejected.
+
 ## If your certificate offer lapsed: Erneut anfragen
 
 When a tunnel is queued for its own Grün certificate and the 48-hour claim window closes before
