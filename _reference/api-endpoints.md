@@ -209,6 +209,11 @@ a different subject.
 so an owner can't seed a forged or un-attested Noise key even for a channel they own. `400` if it doesn't
 verify; `403` if you're not the channel's owner.
 
+**`GET /me/channels/:channel/members`** — list a channel's members (owner-scoped). `{"members":
+[{"holder": "<64 hex>", "noise_pubkey": "<64 hex>|null"}, ...]}`. `403` if you're not the owner —
+same posture as every other route here, existence of a channel you don't own is never leaked via
+an empty-list response indistinguishable from "no members yet".
+
 **`POST /me/channels/:channel/members/:holder/remove`** — revoke a member, no body. Same `403` if you're
 not the owner.
 
