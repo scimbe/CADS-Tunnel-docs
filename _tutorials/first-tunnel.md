@@ -51,10 +51,15 @@ On your tunnel's page, click **Install**. This mints a single-use join token and
 CT_AGENT_CP_URL=https://bunsenbrenner.org
 CT_AGENT_JOIN_TOKEN=...
 CT_AGENT_TOKEN=...
+CT_AGENT_MODE=browser
 CT_AGENT_HOSTNAME=hello-world-a1b2c3d4.bunsenbrenner.org
 CT_AGENT_ORIGIN=127.0.0.1:8080
 CT_AGENT_ORIGIN_PROTO=tcp
 ```
+
+`CT_AGENT_MODE=browser` always rides alongside `CT_AGENT_HOSTNAME` — a tunnel with an assigned
+hostname needs the Browser Plane, not just Mesh-Plane channels, or the edge never actually routes
+it. The Install page sets both together; don't drop one if you're copying this by hand.
 
 <div class="callout warn">
 <strong>The join token is single-use.</strong> If a run fails partway through, don't reuse the same
