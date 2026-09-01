@@ -35,6 +35,7 @@ The single most useful fact about each subcommand, since it changes how you'd sc
 | `ct-agent channel agent-card` | **Yes** — writes the signed AgentCard (and auto-registers it with `/registry/agents` if the right env vars are set), exits. |
 | `ct-agent channel agent-card --verify <file>` | **Yes** — re-verifies a card's signature and expiry, prints the result, exits non-zero on failure. |
 | `ct-agent channel` (no further subcommand) | **No** — joins/serves a channel, runs indefinitely. |
+| `ct-agent manifest create\|sign\|publish\|activate` | **Yes**, all four — build/sign/publish a manifest, or fetch+verify+install one, then exit. `activate` exits non-zero when the install itself failed or was rejected. |
 
 ## Onboarding and serving
 
@@ -77,6 +78,12 @@ script that already sets it. Full reference: `docs/channel.md` in the
 **Using the portal instead of the CLI for channels?** You don't need `ct-agent login` at all — see
 [Manage a channel from the portal]({{ '/how-to/manage-a-channel-from-the-portal/' | relative_url }}),
 which authenticates via your browser session instead.
+
+## The `manifest` subcommands
+
+A separate mechanism from `channel` — installing a signed, publisher-attested service bundle rather
+than joining a channel. Full walkthrough, including the trust-allowlist rejection path, run for real:
+[Install an agent manifest]({{ '/how-to/install-an-agent-manifest/' | relative_url }}).
 
 ## The `channel` subcommands
 
