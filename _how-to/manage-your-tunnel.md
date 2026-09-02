@@ -69,6 +69,22 @@ come back, with a new token. This is also the *only* way to fully retire a tunne
 [Install ct-agent]({{ '/how-to/install-ct-agent/' | relative_url }})) — the tunnel keeps existing on the
 platform, ready to be reconnected to, until you Revoke it here.
 
+## Agent bridge — a registry toggle, not remote control yet
+
+Each row also has an **Agent bridge** dropdown (`off` / `ephemeral` / `permanent`). Turning it on lists
+this tunnel on the portal's [Agent bridges](https://bunsenbrenner.org/portal/agent-bridges) page —
+`permanent` always shows it there (even offline), `ephemeral` only while the tunnel is actually
+connected. Turning it on also force-enables **Require login** in the same action, atomically — a
+bridge-listed tunnel is never reachable without an authenticated session.
+
+<div class="callout warn">
+This toggle is genuinely all it does today: it's a registry entry, not a working remote control. The
+mechanism that would let the portal actually call into your agent's tools isn't built yet — see
+<a href="/portal/agent-bridges">Agent bridges</a> itself for the current honest state. Turning the
+toggle on costs you nothing beyond the login requirement it force-enables; it just doesn't do anything
+more than list you, yet.
+</div>
+
 ## Sharing a tunnel — visible, not usable yet
 
 You'll see a **Share** button next to Install/Revoke — it's disabled. The portal shows it so you know the
