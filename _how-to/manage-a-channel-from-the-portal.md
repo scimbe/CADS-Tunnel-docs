@@ -50,6 +50,10 @@ to any time via [`bunsenbrenner.org/portal/channels`](https://bunsenbrenner.org/
 <figcaption>Every channel you own lists here. "Channels you're invited to" is the other side of <a href="{{ '/how-to/self-service-channel-grant/' | relative_url }}">self-serve allow-listing</a> — where a channel someone else added your e-mail to shows up for you to claim.</figcaption>
 </figure>
 
+This page also shows a quota bar — "Using *N* of *M* channels included in your plan" — the same widget style
+[the tunnels page]({{ '/how-to/manage-your-tunnel/' | relative_url }}) uses, matched deliberately so the two
+pages read consistently.
+
 ## 2. Add yourself (or anyone else) as a member
 
 <figure>
