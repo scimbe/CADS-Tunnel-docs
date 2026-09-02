@@ -91,14 +91,14 @@ and the paste form. Once granted, the portal can call a curated set of read-only
 </div>
 
 <div class="callout warn">
-<strong>Honest gap, easy to miss:</strong> granting the bridge into your channel is necessary but not
-sufficient. Your own <code>channel --serve</code> process only registers the <code>bridge/*</code>
-tools at all when it's started with <code>CT_CHANNEL_BRIDGE_PEER</code> set to the bridge's own
-<strong>Noise</strong> pubkey (a separate value from the holder pubkey the Agent bridges page shows
-you) — see [Environment variables (channels, cards, offers)]({{ '/reference/channel-environment-variables/' | relative_url }})
-for what this variable does. Without it, every bridge tool call fails with "caller is not this
-agent's configured bridge peer" even though the grant itself is valid. The portal doesn't currently
-publish this second value anywhere — ask your operator for it directly until it does.
+<strong>Easy to miss:</strong> granting the bridge into your channel is necessary but not sufficient.
+Your own <code>channel --serve</code> process only registers the <code>bridge/*</code> tools at all
+when it's started with <code>CT_CHANNEL_BRIDGE_PEER</code> set to the bridge's own <strong>Noise</strong>
+pubkey — a separate value from the holder pubkey used to grant. The <a href="/portal/agent-bridges">Agent
+bridges</a> page now publishes both ("This deployment's bridge holder pubkey" and "...Noise pubkey",
+each with its own copy button) — see [Environment variables (channels, cards, offers)]({{ '/reference/channel-environment-variables/' | relative_url }})
+for what the variable does. Without it, every bridge tool call fails with "caller is not this agent's
+configured bridge peer" even though the grant itself is valid.
 </div>
 
 <div class="callout warn">
