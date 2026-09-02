@@ -156,7 +156,7 @@ Once bound, each declared edge `(a, b)` additively authorizes the corresponding 
 admission for both `a` and `b` — the channel id is derived the same way
 [`channel_id_for_link`]({{ '/how-to/join-a-channel/' | relative_url }}) already computes it
 elsewhere on this site (`authorized_channels`/`topology_authorizes` in
-`crates/control-plane/src/storage.rs:5069`, `:5091`). Remove the edge later and the
+`crates/control-plane/src/storage.rs`). Remove the edge later and the
 authorization goes with it — no separate revocation bookkeeping.
 
 ## 5. Confirm it's live via the public status page
