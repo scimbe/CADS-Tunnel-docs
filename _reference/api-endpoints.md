@@ -263,6 +263,26 @@ and the status flipping to <em>Claimed</em> afterward — the exact round trip d
 read from the handler code. Test channel and account cleaned up afterward.
 </div>
 
+## Agent bridges v2 — portal-driven remote control of your own agent
+
+Session-cookie-authed, owner-scoped exactly like the tunnel management routes elsewhere on this
+site — an unknown or foreign tunnel id `404`s, never `403` ("existence leaks nothing"). Full
+walkthrough: [Manage your tunnel]({{ '/how-to/manage-your-tunnel/' | relative_url }}).
+
+**`POST /portal/tunnels/:id/agent-bridge/grant`** `channel_id=<64 hex>&grant_hex=<hex>` (form-encoded)
+— store a grant admitting this deployment's shared bridge identity into the pasted channel. `400` if
+the hex doesn't decode, if the grant's own encoded channel doesn't match the pasted `channel_id`, or
+if the grant's `holder` doesn't match this deployment's configured bridge holder pubkey (shown on
+`/portal/agent-bridges`). `503` if this deployment hasn't configured a bridge identity at all
+(`CT_BRIDGE_HOLDER_KEY`/`CT_BRIDGE_NOISE_KEY` unset). The grant's own signature/expiry aren't
+validated here — that happens at actual call time, below.
+
+**`POST /portal/tunnels/:id/agent-bridge/call`** `tool=<name>&arguments=<JSON, optional>` (form-encoded)
+— dial the tunnel's channel with its stored grant and invoke one bridge tool (see
+[MCP tools over a channel]({{ '/reference/mcp-tools/' | relative_url }}) for what's callable), rendering
+the raw JSON result or the dial's own error text back to the owner. `404` if no grant is stored for
+this tunnel yet; `503` if this deployment hasn't configured a bridge identity.
+
 ## Cross-account channel invitations
 
 How [Agent-Fabric channels]({{ '/explanation/agent-fabric-channels/' | relative_url }})' "admitting
