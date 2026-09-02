@@ -59,3 +59,15 @@ The super-peer relay itself doesn't need its own channel identity or grant — i
 Noise session, only forwards already-encrypted bytes. Don't confuse it with a regular member: nothing
 here overlaps with <code>ct-agent channel init</code>.
 </div>
+
+## Known limitation: direct-upgrade candidates
+
+A member routing through a super-peer gets its admission-time observed address reported as the
+**super-peer's own address** — genuinely correct from the edge's point of view, since that's where
+the traffic actually originates. But it means a same-network peer-to-peer direct-upgrade attempt
+would offer the *super-peer's* address to a remote peer instead of the member's own, which doesn't
+work. This isn't closed today: it would need either NAT-traversal-style discovery independent of the
+super-peer, or having the super-peer participate in admission enough to relay each member's own
+observed address — both of which break the deliberate "protocol-unaware, byte-transparent" simplicity
+this relay is built on. A member behind a super-peer still works correctly; it just always relays
+through the edge for direct-path attempts rather than upgrading to a genuinely direct connection.
