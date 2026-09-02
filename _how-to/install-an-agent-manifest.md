@@ -169,3 +169,7 @@ Exit code `1`. Nothing in the bundle is ever fetched, unpacked, or run once the 
   PUT) or `CT_MANIFEST_REGISTRY_URL` + `CT_MANIFEST_BUNDLE_PATH` + `CT_MANIFEST_REGISTRY_WRITE_TOKEN`
   (the Phase 3 registry's own `POST /manifests`, which also lists what's already published via
   `GET /manifests`).
+
+Once installed, a trusted publisher can maintain a service with a signed, bounded local-LLM task
+instead of a full reinstall -- see
+[Run a maintenance task with the harness]({{ '/how-to/run-a-harness-task/' | relative_url }}).
