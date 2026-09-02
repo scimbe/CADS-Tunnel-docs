@@ -10,7 +10,7 @@ Every other explanation page on this site covers a fixed shape: one tunnel, one 
 pipeline. The Topology Editor (`/me/topologies/*`) is different — it lets you compose your **own**
 agents (yours, or ones shared to you) into a named graph, view it as a draggable node-graph, and get
 algorithmic suggestions for how to wire it. Source-grounded throughout (`crates/control-plane/src/
-topology.rs`, `service.rs`'s `authed_topology_router`), and re-run hermetically for this page — 22/22
+topology.rs`, `service.rs`'s `authed_topology_router`), and re-run hermetically for this page — 33/33
 topology tests passing right now (`cargo test -p ct-control-plane --lib topology`).
 
 ## Creating one, and what a "node" actually is
