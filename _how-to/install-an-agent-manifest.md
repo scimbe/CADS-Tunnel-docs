@@ -29,13 +29,18 @@ ct-agent manifest activate   Fetch, verify and install a signed manifest
 The three-step **publish** side (`create` → `sign` → `publish`) exists so your holder private key
 is only ever needed once, offline: `create` needs no key and no network, `sign` needs the key but
 no network, `publish` needs the network but not the key. This page walks the **consumer** side,
-`activate` -- what an operator (or, soon, the CADS-Tunnel portal's own "Agent bridges" remote
-control -- design in progress, not live yet) runs to actually install something.
+`activate` -- what an operator runs to actually install something.
 
 <div class="callout warn">
-This page does not cover the portal's "Agent bridges" page. Its remote-control backend is
-mid-redesign as of this writing -- don't take its presence in the portal UI as proof this flow is
-reachable from there yet. The CLI flow below is the real, working path today.
+This page does not cover installing a manifest through the portal's "Agent bridges" page.
+<strong>Updated</strong> -- the dialer behind Agent bridges is now real and live (it was
+"mid-redesign, not live yet" when this page was first written): a granted tunnel owner can call a
+curated set of read-only tools (<code>bridge/status</code>, <code>bridge/config</code>,
+<code>bridge/channel-members</code>, <code>bridge/allowlist-list</code>,
+<code>bridge/manifest-list</code>) from the portal today. <code>bridge/manifest-install</code>
+itself isn't one of them yet -- a deliberate scope decision (it needs an input form the portal
+doesn't build yet), not a backend limitation. The CLI flow below remains the only way to actually
+install a manifest, whether or not you've also granted the portal bridge access to that tunnel.
 </div>
 
 ## 1. Build and sign a manifest (the publisher side)
