@@ -7,12 +7,12 @@ order: 6
 # Topology API
 
 The REST surface behind the [Topology Editor](https://bunsenbrenner.org/portal/topologies) —
-`authed_topology_router` in `crates/control-plane/src/service.rs:1102` and the public
-`topology_status_router` at `:2953`. Task-oriented walkthrough:
+`authed_topology_router` and the public `topology_status_router`, both in
+`crates/control-plane/src/service.rs`. Task-oriented walkthrough:
 [Compose a topology]({{ '/how-to/compose-a-topology/' | relative_url }}). Concepts, overlay
 modes, and the exclusive-membership model: [The Topology Editor]({{ '/explanation/topology-editor/' | relative_url }}).
 
-Checked directly against source and the 28/28 passing `cargo test -p ct-control-plane --lib
+Checked directly against source and the 33/33 passing `cargo test -p ct-control-plane --lib
 topology` suite (re-run for this page). Two rows below (marked) were also confirmed live
 against `https://bunsenbrenner.org`; the rest were not click-tested end to end this pass — no
 portal login was available while writing this page. Flagged here rather than presented as
@@ -22,7 +22,7 @@ verified live, matching this site's own [honest-gap convention]({{ '/reference/a
 
 Every `/me/topologies*` route accepts **either** an OIDC bearer token (an `Authorization: Bearer`
 header — see [Getting a bearer token without a browser]({{ '/reference/api-endpoints/' | relative_url }}#getting-a-bearer-token-without-a-browser))
-**or** a real portal session cookie (`subject_of_topology`, `service.rs:1150`) — the second
+**or** a real portal session cookie (`subject_of_topology` in `service.rs`) — the second
 exists specifically so the editor's own client-side `fetch()` calls can authenticate via the
 ambient portal session it already has, with no bearer token to hold. Accepting either is not a
 scope-widening: both resolve to the same verified subject. `GET /net/:net_uuid` is the one
@@ -48,7 +48,7 @@ graph.
 **`GET /me/topologies`** — the caller's own topologies: `[{"id", "net_uuid"}]`.
 
 **`GET /me/topologies/shared`** — topologies shared with the caller's **verified session
-e-mail** (`topology_shared_list`, `:2181`) — never a caller-supplied email, so there's no way to
+e-mail** (`topology_shared_list`) — never a caller-supplied email, so there's no way to
 enumerate another account's shares. Empty (not an error) when the session has no verified
 e-mail, including a bearer-token caller — only a real portal login ever carries one.
 
@@ -67,8 +67,8 @@ e-mail, including a bearer-token caller — only a real portal login ever carrie
 
 `overlay_mode` is one of `baseline`, `smart-route`, `shortcut`, `random-mesh` (defaults to
 `baseline` for a topology that never set one). An edge's `channel` field is present only if one
-was explicitly attached via `PUT .../edges/channel` below — omitted otherwise (`EdgeView`,
-`service.rs:1706`), not `null`.
+was explicitly attached via `PUT .../edges/channel` below — omitted otherwise (`EdgeView` in
+`service.rs`), not `null`.
 
 **`GET /me/topologies/:id/editor`** — the same graph rendered as a self-contained, draggable
 SVG node-graph page (`text/html`). Owner or shared-with viewer; a non-owner viewer never sees
@@ -127,7 +127,7 @@ caller-supplied candidate link costs; in `shortcut` mode, adds capped extra edge
 | topology has more than `MAX_SUGGEST_AGENTS` (64) agents | `400` |
 
 Both caps exist so the O(budget·n³) shortcut search can't wedge the control plane
-(`service.rs:1909`). The response is a **plan** to act on yourself (draw the suggested edges);
+(`service.rs`). The response is a **plan** to act on yourself (draw the suggested edges);
 computing a suggestion never writes edges on its own.
 
 ## Operator binding
@@ -141,8 +141,8 @@ non-owner topology or a bad proof — deliberately indistinguishable, matching e
 owner-isolation check on this page.
 
 Once bound, every declared edge `(a, b)` additively authorizes channel admission for both `a`
-and `b`, via `authorized_channels`/`topology_authorizes` (`crates/control-plane/src/storage.rs:5069`,
-`:5091`) — this is the fix for [#698](https://github.com/scimbe/CADS-Tunnel/issues/698)'s
+and `b`, via `authorized_channels`/`topology_authorizes` (`crates/control-plane/src/storage.rs`)
+— this is the fix for [#698](https://github.com/scimbe/CADS-Tunnel/issues/698)'s
 finding 1 (PR#700 + ct-agent#113); before this route existed, a topology's edges were real and
 tested but reachable only from inside the control plane, never actually bindable from the
 outside. See [Compose a topology]({{ '/how-to/compose-a-topology/' | relative_url }}#4-bind-an-operator-key--the-step-that-makes-it-real)
@@ -174,4 +174,4 @@ API) also confirmed live: `303` redirect when logged out.
 
 UUID-only access for now — an owner auth-gate on this page is a tracked follow-up, not
 implemented in the current source. The eventual `<net_uuid>.<zone>` subdomain form reuses the
-Browser-Plane routing pipeline (`service.rs:2949`).
+Browser-Plane routing pipeline (`service.rs`).
