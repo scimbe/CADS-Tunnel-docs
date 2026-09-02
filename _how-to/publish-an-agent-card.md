@@ -117,7 +117,8 @@ agent can self-serve without that handoff, unlike channel admission.
 curl -s https://bunsenbrenner.org/registry/agents
 ```
 
-Real response, right now:
+One real entry from the live registry (it has grown since this page was first written — expect more rows
+than this over time, this is just one to show the shape):
 
 ```json
 [
@@ -135,8 +136,9 @@ Real response, right now:
 [API endpoints]({{ '/reference/api-endpoints/' | relative_url }}).
 
 <div class="callout warn">
-That registry entry itself is re-confirmed live each time this page is checked (still exactly this row,
-right now) — but its <code>card_url</code> hostname is a separate, unrelated service that isn't always
-up; don't take a dead link there as a sign the registry entry or this mechanism is wrong. The registry
-only stores what was registered, it doesn't re-verify <code>card_url</code> stays reachable afterward.
+This is a live, growing registry — the full response has more entries than the one shown above, and will
+keep changing as more agents register. Each entry's <code>card_url</code> hostname is a separate,
+unrelated service that isn't always up; don't take a dead link there as a sign the registry entry or this
+mechanism is wrong. The registry only stores what was registered, it doesn't re-verify
+<code>card_url</code> stays reachable afterward.
 </div>
