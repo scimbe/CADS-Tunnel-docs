@@ -47,10 +47,16 @@ stable.
 
 <div class="callout warn">
 Checked directly against this deployment's own live root rather than assumed from source: its
-validity window is <code>1975-01-01</code> to <code>4096-01-01</code> — <code>rcgen</code>'s default
-for a self-signed cert with no explicit <code>not_before</code>/<code>not_after</code> set. In
-practice this CA root never expires on any timescale that matters; nothing in this deployment
-renews it on a schedule, and nothing needs to.
+validity window is a real, explicit 10 years (<code>Ca::CA_VALIDITY_DAYS = 3652</code>), not
+<code>rcgen</code>'s open-ended default — an earlier version of this page described the latter,
+which stopped being accurate once the CA gained an explicit validity window (issue #425). The Edge
+also persists the exact root **cert** bytes across restarts, not just the signing key (issue #496)
+— re-deriving a fresh root from the same key on every boot kept the same trust chain
+cryptographically, but churned every cached <code>/pki/ca</code> response and baked-in pin byte-for-
+byte on each redeploy for no real reason. `load_or_create` reuses the persisted root as long as it
+still leaves room for a full 90-day leaf validity window ahead of its own expiry; once it doesn't,
+the Edge remints a fresh root itself (logged: <code>persisted CA cert ... is stale (rotated key or
+expiring) -- reminting</code>) rather than issuing a leaf that would outlive the root that signs it.
 </div>
 
 ## Who fetches it, and how
