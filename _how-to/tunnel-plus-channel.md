@@ -13,6 +13,17 @@ a direct, encrypted, machine-to-machine path to another agent — for tool calls
 one gives you the other: they're deliberately separate mechanisms, run as **two independent `ct-agent`
 processes on the same machine**, not one combined mode.
 
+**The cardinality is asymmetric, and worth stating plainly:** one onboarded `ct-agent` install has
+*exactly one* tunnel — `ct-agent onboard` redeems exactly one join token into exactly one routing token
+and hostname, and there's no "add a second tunnel to this install" concept; a second public HTTPS
+address means a second, independently-onboarded `ct-agent` process. Channels have no such limit — a
+channel is just a process using its own separate holder/noise identity (from `ct-agent channel init`,
+unrelated to the tunnel's origin key), so one machine or account can join as many channels as it wants,
+each its own process and its own grant. This is why the Agent-bridges toggle
+([Manage your tunnel]({{ '/how-to/manage-your-tunnel/' | relative_url }})) lives on a *tunnel's* row
+specifically: it's a property of the one tunnel that row represents, not of "the agent" as a whole —
+channels aren't portal-discoverable at all today.
+
 This is the real, running shape of every one of this project's own multi-agent demos (e.g. the
 [a2a-demo](https://github.com/scimbe/CADS-a2a-demo) and
 [auction-demo](https://github.com/scimbe/CADS-auction-demo) repos): an **origin** process serves the
