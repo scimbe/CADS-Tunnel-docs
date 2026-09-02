@@ -6,14 +6,9 @@ order: 3
 
 # ct-agent CLI commands
 
-Pulled directly from `ct-agent`'s `src/main.rs` argument dispatch, not from `--help` — see the warning
-below.
-
-<div class="callout warn">
-<code>ct-agent</code> has no working <code>--help</code>/<code>-h</code> flag. An unrecognized first
-argument falls through to the default serve path (which then blocks waiting on its own configuration)
-instead of printing usage. This page is the actual reference.
-</div>
+Pulled directly from `ct-agent`'s `src/main.rs` argument dispatch. `ct-agent --help` (or `-h`) prints a
+real usage summary — this page goes further, adding the one thing `--help` doesn't tell you: whether each
+command exits or keeps running.
 
 ## Whether a command exits
 

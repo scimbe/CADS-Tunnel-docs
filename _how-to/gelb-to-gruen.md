@@ -49,12 +49,6 @@ stop it. If you only want the certificate and don't want a long-lived process ha
 you'd just be responsible for renewing manually before they expire. It does not replace your running
 tunnel process either way; run it alongside, not instead of, the agent that's already serving.
 
-<div class="callout warn">
-<code>ct-agent</code> has no working <code>--help</code>/<code>-h</code> flag today — running it with an
-unrecognized first argument falls through to the default serve path instead of printing usage. Don't
-rely on <code>--help</code> for any <code>ct-agent</code> command; this documentation is the reference.
-</div>
-
 ## Confirm it worked
 
 ```bash
