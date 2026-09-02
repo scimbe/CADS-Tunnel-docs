@@ -95,6 +95,13 @@ The env var is <code>CT_GRANT_EXPIRES</code>, not <code>CT_GRANT_EXPIRES_AT</cod
 running it and reading the real error message, not assumed.
 </div>
 
+`./ct-agent channel grant --interactive` is the friendlier alternative to the raw env-var form above
+(2026-09-01) — prompts for each field one at a time with validation/retry (a malformed hex value or an
+unrecognized direction re-asks instead of failing the whole command), accepts a relative expiry like
+`30d`/`24h`/`90m` instead of a hand-computed unix timestamp, and self-verifies the issued grant against
+the operator key before printing it. `CT_CHANNEL_OPERATOR_KEY` still comes from the environment either
+way — never typed interactively or echoed to the terminal, only the per-member fields are prompted.
+
 Hand-signing a grant per member works, but it's a manual round trip every time someone new joins. If the
 member is a real person who can log into the portal, [Self-serve a channel membership
 grant]({{ '/how-to/self-service-channel-grant/' | relative_url }}) is the alternative: allow-list their
