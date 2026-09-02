@@ -17,8 +17,9 @@ through one of them.
 ## The three backends
 
 - **`SelfHosted`** — an in-process, fully authoritative DNS server this platform runs itself
-  (`crates/dns`'s own `AcmeDnsStore` + a hand-rolled DNS wire codec, real UDP/TCP `:53` server,
-  22 passing tests). Built for registrars with **no DNS API at all** (the docs cite Strato by name,
+  (`crates/dns`'s own `AcmeDnsStore` + a hand-rolled DNS wire codec, real UDP/TCP `:53` server; the
+  whole `ct-dns` crate is 55/55 passing tests, re-run hermetically for this page). Built for
+  registrars with **no DNS API at all** (the docs cite Strato by name,
   [ADR-0019](https://github.com/scimbe/CADS-Tunnel/blob/main/docs/adr/0019-unified-443-gateway.md)) —
   you delegate just the challenge subdomain (`NS`/glue pointing `auth.<zone>` at the plane), the rest
   of the zone stays wherever it already is. A loopback-only mutation API (`CT_DNS_API_LISTEN`,
