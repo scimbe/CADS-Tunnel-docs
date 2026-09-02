@@ -11,7 +11,7 @@ by auditing every route this control plane actually registers and checking it ag
 documented here. `/me/networks/*` (`crates/common/src/policy.rs`, #102) had zero coverage on this
 site. It's a different idea from Topology's graph editor: not "draw connections," but "declare who's
 *allowed* to connect to whom, by role and sensitivity level" — a small RBAC+MAC policy language,
-independently pure-tested (17/17 `ct-common` policy tests, re-run hermetically for this page) and
+independently pure-tested (12/12 `ct-common` policy tests, re-run hermetically for this page) and
 exposed through three `/me/*` routes.
 
 ## The policy language
@@ -49,19 +49,20 @@ Two things a stored `Network` computes, both real functions with passing tests, 
   reason}`) — a member id that doesn't exist in the network is a fail-closed deny with a clear reason,
   not an error. Confirmed by its own test, `network_explain_answers_allowed_and_why_for_two_agent_ids`.
 
-## The honest caveat: this doesn't gate anything live, yet — despite what the source itself claims
+## The honest caveat: this doesn't gate anything live, yet
 
 <div class="callout warn">
-`crates/common/src/policy.rs`'s own module doc comment states, in the present tense: "the controller
-compiles a declaration into channel grants from it, <strong>the edge broker enforces it at channel
-admission</strong>… and the MCP <code>net.explain(a, b)</code> tool renders its <code>Decision</code>."
-Checked directly rather than taking that at face value — grepped every source file in
+Checked directly against the source rather than assumed — grepped every source file in
 <code>crates/edge</code> for any reference to this module, this <code>Policy</code> type, or
 <code>desired_channels</code>: <strong>zero matches</strong>. Grepped every registered MCP tool
 (<code>ct_common::mcp</code>'s <code>register_*</code> functions and what actually gets wired up in
 <code>ct-agent</code>) for an <code>explain</code> tool: also zero. Neither the edge-broker enforcement
-nor the <code>net.explain</code> MCP tool exist in the shipped system today. The doc comment describes
-the intended end state of #102, not current behavior — the same gap as
+nor the <code>net.explain</code> MCP tool exist in the shipped system today —
+<code>crates/common/src/policy.rs</code>'s own module doc comment says exactly this now too (fixed as
+part of #235, after an earlier version of that comment described the intended end state in the present
+tense and read as a claim this was already live): "the intended end state (#102) is… <strong>none of
+that wiring exists yet</strong> (#235): the edge broker's admission path never references this module,
+and there is no <code>explain</code> MCP tool." Same gap as
 <a href="{{ '/explanation/topology-editor/' | relative_url }}">the Topology Editor's</a> overlay-mode
 and unreachable operator-binding route, and worth exactly the same caveat: the decision engine itself
 is real, correct, and tested — declaring a network and computing what it would allow works exactly as
