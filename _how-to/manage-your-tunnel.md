@@ -69,7 +69,7 @@ come back, with a new token. This is also the *only* way to fully retire a tunne
 [Install ct-agent]({{ '/how-to/install-ct-agent/' | relative_url }})) — the tunnel keeps existing on the
 platform, ready to be reconnected to, until you Revoke it here.
 
-## Agent bridge — a registry toggle, not remote control yet
+## Agent bridge — the registry toggle for real remote control
 
 Each row also has an **Agent bridge** dropdown (`off` / `ephemeral` / `permanent`). Turning it on lists
 this tunnel on the portal's [Agent bridges](https://bunsenbrenner.org/portal/agent-bridges) page —
@@ -78,11 +78,16 @@ connected. Turning it on also force-enables **Require login** in the same action
 bridge-listed tunnel is never reachable without an authenticated session.
 
 <div class="callout warn">
-This toggle is genuinely all it does today: it's a registry entry, not a working remote control. The
-mechanism that would let the portal actually call into your agent's tools isn't built yet — see
-<a href="/portal/agent-bridges">Agent bridges</a> itself for the current honest state. Turning the
-toggle on costs you nothing beyond the login requirement it force-enables; it just doesn't do anything
-more than list you, yet.
+<strong>Updated</strong> — this used to be registry-only ("lists you, doesn't do anything more"); the
+dialer behind it is now real and live. This toggle still only *lists* the tunnel — it doesn't by
+itself grant the portal access to your agent's channel. To actually make it callable: mint a grant
+from your own agent admitting the platform's bridge identity (`ct-agent channel grant`,
+`CT_GRANT_DIRECTION=initiate`) and paste the channel id + grant hex into the
+<a href="/portal/agent-bridges">Agent bridges</a> page itself, which shows the exact pubkey to grant
+and the paste form. Once granted, the portal can call a curated set of read-only tools
+(<code>bridge/status</code>, <code>bridge/config</code>, <code>bridge/channel-members</code>,
+<code>bridge/allowlist-list</code>, <code>bridge/manifest-list</code>) — mutating actions
+(allow-list add/remove, manifest install) aren't wired into the portal yet.
 </div>
 
 ## Sharing a tunnel — visible, not usable yet
