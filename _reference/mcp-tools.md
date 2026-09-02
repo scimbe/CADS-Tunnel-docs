@@ -20,6 +20,8 @@ This page is what's actually reachable, driven entirely by which env vars you se
 | `agent/card` | No | `CT_AGENT_CARD_*` (see [Publish an agent card]({{ '/how-to/publish-an-agent-card/' | relative_url }})). |
 | `auction/offer`, `auction/bid` | No | `CT_AGENT_OFFER_*` (see [Environment variables (channels, cards, offers)]({{ '/reference/channel-environment-variables/' | relative_url }})). |
 | `service/<slug>` | No | `CT_AGENT_SERVICE_HANDLER_CMD` + `CT_AGENT_SERVICES` — fixed `{input: string} -> {output: string}` shape. |
+| `channel/grant` | No | `CT_CHANNEL_OPERATOR_KEY` — issue a grant to any admitted caller, same fields `channel grant --interactive` prompts for (see [Set up an Agent-Fabric channel]({{ '/how-to/join-a-channel/' | relative_url }})). **Not** peer-restricted — any admitted channel member can call it, unlike the `bridge/*` tools below. |
+| `bridge/status`, `bridge/config`, `bridge/channel-members`, `bridge/allowlist-list`, `bridge/allowlist-add`, `bridge/allowlist-remove`, `bridge/manifest-list`, `bridge/manifest-install` | No | `CT_CHANNEL_BRIDGE_PEER` (64-hex Noise pubkey) — the Agent-bridges-v2 tranche (see [Manage your tunnel]({{ '/how-to/manage-your-tunnel/' | relative_url }})). **Peer-restricted**: every handler independently re-checks the caller's Noise pubkey against this one configured value and refuses anyone else, even an otherwise-admitted channel member — registering the tool at all doesn't mean anyone on the channel can call it. `bridge/cert-status` and `bridge/channel-revoke` are the two tools from this tranche's own design scope that don't exist yet (cross-process state and revocation flow, respectively). |
 
 **Call `tools/list` first.** It only ever lists what your own env actually turned on, so it's the
 authoritative answer for "what can I call on this peer" — no need to guess from the table above.
@@ -30,7 +32,7 @@ and <code>settlement/*</code> tools (real, tested code — checked their own tes
 no shipped <code>ct-agent</code> binary ever calls the functions that would register them
 (<code>register_chat_tool</code>/<code>register_propose_tool</code>/<code>register_settlement_tools</code>)
 — confirmed by grepping <code>channel_run.rs</code>'s non-test code for every call site. Don't expect
-them in a live <code>tools/list</code>; only the four rows above are reachable today.
+them in a live <code>tools/list</code>; only the rows in the table above are reachable today.
 </div>
 
 ## Verified live: `tools/list`
