@@ -69,11 +69,10 @@ operator involvement in that trust decision at all.
 
 Per [ADR-0015](https://github.com/scimbe/CADS-Tunnel/blob/main/docs/adr/0015-p2p-mesh-with-rendezvous.md)
 — the Tailscale/DERP model — holding a Capability doesn't mean traffic routes through the platform at
-all. The edge only ever acts as a **rendezvous**: the Client presents its routing token (gated by a
-small proof-of-work, so rendezvous itself can't be used as a cheap DoS lever), and if your Agent has
-advertised a reachable direct address, the edge hands it to the Client to try. If that succeeds, traffic
-flows Client↔Agent directly — the operator is genuinely out of the data path, not just claiming to be.
-Otherwise the connection relays through the edge.
+all. If your Agent has advertised a reachable direct address, the Client asks the edge for it (a plain
+lookup, `'P'` query — no proof-of-work gate on this specific step) and tries dialing straight there. If
+that succeeds, traffic flows Client↔Agent directly — the operator is genuinely out of the data path, not
+just claiming to be. Otherwise the connection relays through the edge.
 
 <div class="callout warn">
 <strong>Correction to an earlier version of this page.</strong> This previously described the direct
@@ -92,13 +91,18 @@ confirmed in <code>ct-agent</code>'s <code>p2p.rs</code> — but it's for the se
 proven for every real-world NAT.
 </div>
 
-Confirmed real and currently passing, not just described in the ADR: `ct-client`'s own test suite
-(`cargo test -p ct-client rendezvous::`, re-run hermetically for this page — 16 passed, 0 failed)
-includes `client_tunnels_directly_to_agent` (a Client dialing an Agent's advertised address straight,
-no edge involved) and `p2p_falls_back_to_relay_when_direct_fails` (an unreachable advertised address
-degrades cleanly to relay) — both exercise the advertise-then-dial-or-relay mechanism above, not NAT
-traversal. Also covered: both QUIC and the TCP/HTTP2 fallback transport, bidirectional streaming, and a
-live `https_website_through_the_tunnel_with_client_side_cert_validation` case.
+Confirmed real, not just described in the ADR — but the specific mechanism has been rebuilt since this
+page was first written. The very first implementation of this (`crates/client::rendezvous`, a PoW-gated
+design from the earliest development cycles) turned out to have zero production callers on either side
+and was deleted as dead code (issue #580); the tunnel level had already moved to a different, simpler
+protocol before that removal. What's live today, source-confirmed in `crates/client/src/transport.rs`:
+`query_direct_endpoint` (the `'P'` lookup above), `client_tunnel_direct` (the direct-dial attempt), and
+`client_tunnel_auto`/`client_tunnel_p2p_or_relay` (M11.4b-iv, #374) — which don't just try direct then
+fall back serially, but **race** the direct attempt against the Edge relay concurrently, giving direct a
+75ms head start (`DIRECT_HEAD_START`) so a live direct path almost always wins without a slow-but-real
+one being starved by a faster relay. `cargo test -p ct-client --lib transport::`, re-run hermetically for
+this page, is 12/12 passing, including `client_tunnel_auto_falls_through_to_relay_when_the_direct_endpoint_query_stalls`
+and `p2p_or_relay_fallback_times_out_against_a_stalled_edge` — both exercise this exact fallback path.
 
 <div class="callout warn">
 <strong>Honest scope of this page.</strong> The Capability format and the connection-establishment
