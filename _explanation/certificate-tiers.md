@@ -67,11 +67,15 @@ CA is out of budget, your hostname simply waits at the back of a FIFO queue unti
 Once the sweep offers you a CA, you're in a **48-hour claim window**: `ct-agent certificate` needs to
 actually complete an order against that CA before the window closes. Miss it — the agent wasn't running,
 the DNS-01 exchange kept failing, whatever the reason — and the offer lapses: the CA assignment is
-cleared and your hostname doesn't automatically re-enter the queue. From the portal's tunnels page, a
-lapsed hostname shows a **Erneut anfragen** ("request again") button that puts it back at the end of the
-line; there's no equivalent from `ct-agent` itself today — see
-[Manage your tunnel from the portal]({{ '/how-to/manage-your-tunnel/' | relative_url }}#if-your-certificate-offer-lapsed-erneut-anfragen)
-for exactly what clicking it does.
+cleared. **Since [CADS-Tunnel#758](https://github.com/scimbe/CADS-Tunnel/issues/758) (2026-09-03)** a
+lapsed offer automatically re-enters the queue with a fresh position at the back of the line — no click
+needed. This was a real fleet-wide gap before: many tunnels never run `ct-agent certificate` at all (a
+browser-tunnel-only setup has no reason to), so every one of them would silently dead-end at "lapsed" and
+just sit there — found 12 of 17 tunnels under one account lapsed simultaneously the night this was fixed.
+If you'd rather stay on the shared Gelb certificate permanently instead of cycling through this queue at
+all, there's now an opt-out checkbox for that too — see
+[Manage your tunnel from the portal]({{ '/how-to/manage-your-tunnel/' | relative_url }}#certificate-offer-lapsed-auto-requeue-and-the-opt-out)
+for both.
 
 <div class="callout">
 The public <code>GET /agent/acme-admission/:routing_token/:hostname</code> endpoint (see
