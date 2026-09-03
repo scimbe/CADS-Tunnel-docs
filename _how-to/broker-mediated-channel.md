@@ -49,8 +49,15 @@ CT_OIDC_TOKEN=<bearer token> \
 ```
 
 Real output, actually run: `registered channel add9ea39...ce with the control plane` — a plain
-`eprintln!`, exit `0`. Re-running it for a channel you already own is harmless (idempotent upsert),
-confirmed by running it twice.
+`eprintln!`, exit `0`. Re-running it for a channel you already own with the **same** operator key
+is a harmless no-op, confirmed by running it twice.
+
+**Updated (CADS-Tunnel#747, ct-agent v0.7.24)**: re-running it with a *different* operator key
+against a channel you already own is no longer a silent upsert — the control plane now refuses with
+`409 Conflict` unless you explicitly confirm the re-key. This closed a real gap where anyone who
+could name an existing channel id could silently take over its operator (invalidating every grant
+issued under the old one) with no audit trail. To genuinely rotate a channel's operator on purpose,
+add `--rekey` (or `CT_CHANNEL_REKEY=1`) to the command above.
 
 There's no CLI wrapper for the next part — register each member directly against the HTTP API
 (`POST /me/channels/:channel/members`, see [API endpoints]({{ '/reference/api-endpoints/' | relative_url }})

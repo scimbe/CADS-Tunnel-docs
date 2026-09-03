@@ -28,7 +28,7 @@ The single most useful fact about each subcommand, since it changes how you'd sc
 | `ct-agent channel bind-topology` | **Yes** — as the operator, signs the proof-of-possession the Topology Editor's operator-binding step needs, prints it, exits. |
 | `ct-agent channel super-peer` | **No** — runs as an opt-in LAN-local relay for other same-network channel members, indefinitely. See [Run a super-peer]({{ '/how-to/run-a-super-peer/' | relative_url }}). |
 | `ct-agent login` | **Yes** — runs the OIDC device-code flow, saves the resulting token, exits. |
-| `ct-agent channel register` | **Yes** — registers the operator's channel authority with the control plane, exits. |
+| `ct-agent channel register [--rekey]` | **Yes** — registers the operator's channel authority with the control plane, exits. Re-registering an already-owned channel with a *different* operator key is refused (`409`) unless `--rekey` (or `CT_CHANNEL_REKEY=1`) explicitly confirms the rotation (CADS-Tunnel#747, v0.7.24+) — closes a real silent-takeover gap. Same operator key twice is always a harmless no-op. |
 | `ct-agent channel allowlist add\|remove\|list [email]` | **Yes** — manages a channel's self-service e-mail allow-list against the control plane, exits. |
 | `ct-agent channel agent-card` | **Yes** — writes the signed AgentCard (and auto-registers it with `/registry/agents` if the right env vars are set), exits. |
 | `ct-agent channel agent-card --verify <file>` | **Yes** — re-verifies a card's signature and expiry, prints the result, exits non-zero on failure. |
