@@ -27,6 +27,20 @@ The response is a real, resolved verdict, not a guess:
 - The holder **is not** a member, or the query itself fails — the join is refused. What "fails"
   meant here, and what changed about it, is the rest of this page.
 
+The operator public key in that verdict is the root of the whole chain — the broker admits whatever grant
+verifies against it, nothing more. Until [#747](https://github.com/scimbe/CADS-Tunnel/issues/747) (fixed
+2026-09-03) the record behind it was softer than everything downstream of it: `POST /me/channels` was an
+unconditional upsert, so the owning account re-registering a channel with a *different* `operator_pubkey`
+— deliberately, or via a stale `CT_GRANT_CHANNEL` export aimed at the wrong channel, which is exactly the
+near-miss that surfaced this on a production channel — silently replaced the key with no refusal and no
+audit row. To the broker that's indistinguishable from a legitimate rotation: on the next join every grant
+the previous operator signed fails verification, so every admitted member of that channel loses admission
+at once (an outage), and whoever holds the owning account has quietly taken over who may sign grants for
+it (a hijack). The guard makes that step explicit. A mismatched operator for a channel you already own is
+now a `409` with nothing written; only `"confirm_rekey": true` rotates it, and that rotation leaves a
+`channel_operator_rekeyed` entry in the admin audit log. `POST /me/rooms` runs through the same check with
+no opt-in at all. Exact responses: [API endpoints]({{ '/reference/api-endpoints/' | relative_url }}#self-service-channel-registry).
+
 ## Two different kinds of "no" — and why they used to be the same
 
 Until a fix landed on `main` (2026-07-31, tracked as
