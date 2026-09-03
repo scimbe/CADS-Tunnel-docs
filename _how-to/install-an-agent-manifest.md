@@ -33,14 +33,13 @@ no network, `publish` needs the network but not the key. This page walks the **c
 
 <div class="callout warn">
 This page does not cover installing a manifest through the portal's "Agent bridges" page.
-<strong>Updated</strong> -- the dialer behind Agent bridges is now real and live (it was
-"mid-redesign, not live yet" when this page was first written): a granted tunnel owner can call a
-curated set of read-only tools (<code>bridge/status</code>, <code>bridge/config</code>,
-<code>bridge/channel-members</code>, <code>bridge/allowlist-list</code>,
-<code>bridge/manifest-list</code>) from the portal today. <code>bridge/manifest-install</code>
-itself isn't one of them yet -- a deliberate scope decision (it needs an input form the portal
-doesn't build yet), not a backend limitation. The CLI flow below remains the only way to actually
-install a manifest, whether or not you've also granted the portal bridge access to that tunnel.
+<strong>Updated (2026-09-03)</strong> -- the portal UI for granting and calling bridge tools is
+built, but the actual dial from control plane to agent currently fails for real calls
+(<code>bridge/status</code> and the rest of the tranche return a channel session error rather
+than a result) -- tracked as
+<a href="https://github.com/scimbe/CADS-Tunnel/issues/745">CADS-Tunnel#745</a>, open. Don't rely
+on the portal's Agent-bridges page to actually work yet; the CLI flow below remains the only way
+to install a manifest, whether or not you've granted the portal bridge access to a tunnel.
 </div>
 
 ## 1. Build and sign a manifest (the publisher side)
