@@ -43,7 +43,10 @@ or the portal web UI — the same `POST /me/channels/:channel/allowlist` call ei
 [Self-service channel allow-list & claim]({{ '/reference/api-endpoints/#self-service-channel-allow-list--claim' | relative_url }}).
 This is owner-scoped: only the subject that registered the channel (`POST /me/channels`, see
 [Self-service channel registry]({{ '/reference/api-endpoints/#self-service-channel-registry' | relative_url }}))
-can manage its allow-list.
+can manage its allow-list. If you're (re-)running `channel register` in the same shell first, check
+`echo "$CT_CHANNEL_ID" "$CT_GRANT_CHANNEL"` for a stale export — registering an owned channel with a
+different operator key is a `409` since #747, see
+[the caution in Set up a broker-mediated channel]({{ '/how-to/broker-mediated-channel/' | relative_url }}#register-the-channel-with-the-control-plane).
 
 ## 2. The invitee logs into the portal and finds the channel
 

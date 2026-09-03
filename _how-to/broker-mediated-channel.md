@@ -57,7 +57,19 @@ against a channel you already own is no longer a silent upsert — the control p
 `409 Conflict` unless you explicitly confirm the re-key. This closed a real gap where anyone who
 could name an existing channel id could silently take over its operator (invalidating every grant
 issued under the old one) with no audit trail. To genuinely rotate a channel's operator on purpose,
-add `--rekey` (or `CT_CHANNEL_REKEY=1`) to the command above.
+add `--rekey` (or `CT_CHANNEL_REKEY=1`) to the command above; on the HTTP API it's the explicit,
+audit-logged `"confirm_rekey": true` field (see
+[API endpoints]({{ '/reference/api-endpoints/' | relative_url }}#self-service-channel-registry)).
+
+<div class="callout warn">
+<strong>Before you run <code>channel register</code>, check which channel id it's about to target.</strong>
+It reads <code>CT_GRANT_CHANNEL</code> (the allow-list commands also accept <code>CT_CHANNEL_ID</code>),
+and a stale export from an earlier session is the real near-miss behind #747: a leftover value made
+<code>channel register</code> point at an existing production channel instead of the freshly derived
+one — no damage that time only because the operator key happened to be the same. Run
+<code>echo "$CT_CHANNEL_ID" "$CT_GRANT_CHANNEL"</code> first and <code>unset</code> anything you didn't
+set on purpose in this shell.
+</div>
 
 There's no CLI wrapper for the next part — register each member directly against the HTTP API
 (`POST /me/channels/:channel/members`, see [API endpoints]({{ '/reference/api-endpoints/' | relative_url }})
