@@ -34,9 +34,14 @@ anything or lose continuity; only the channel id and the grants change.
   lives, they can print their own public key locally without exposing the private one — see
   [Set up an Agent-Fabric channel]({{ '/how-to/join-a-channel/' | relative_url }}) for `channel init`'s
   output shape, which prints both.
-- An OIDC bearer token for whichever account should own the new channel registration (any account works —
-  channel ownership is bookkeeping, not a security boundary; see
-  [Self-service channel registry]({{ '/reference/api-endpoints/#self-service-channel-registry' | relative_url }})).
+- An OIDC bearer token for whichever account should own the new channel registration. Any account works
+  for *this* registration specifically, because step 2 derives a brand-new, never-before-registered
+  channel id — but ownership itself is a real security boundary going forward, not mere bookkeeping: once
+  registered, no other account can register against that same channel id (`OwnedByAnother`), and even the
+  owning account can't silently swap in a different operator key later without explicitly confirming a
+  rekey (`--rekey` / `CT_CHANNEL_REKEY=1`, CADS-Tunnel#747) — see
+  [`channel register`]({{ '/reference/cli/' | relative_url }}) and
+  [Self-service channel registry]({{ '/reference/api-endpoints/#self-service-channel-registry' | relative_url }}).
 
 ## 1. Mint a fresh operator identity
 
