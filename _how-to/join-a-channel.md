@@ -48,7 +48,7 @@ One per channel, not per member:
 
 ```
 # Agent-Fabric channel OPERATOR identity — generated locally, keep the key secret.
-# Register this PUBLIC key as the channel authority (POST /channel/register):
+# Register this PUBLIC key as the channel authority (`ct-agent channel register`, POST /me/channels):
 #   operator_pubkey = 8811994f5a8324533652fab69d3074fc2cc6045c402f23c207a199dc9df93593
 export CT_CHANNEL_OPERATOR_KEY=...
 ```

@@ -46,7 +46,7 @@ ct-agent channel operator-init
 
 ```
 # Agent-Fabric channel OPERATOR identity — generated locally, keep the key secret.
-# Register this PUBLIC key as the channel authority (POST /channel/register):
+# Register this PUBLIC key as the channel authority (`ct-agent channel register`, POST /me/channels):
 #   operator_pubkey = <64 hex>
 export CT_CHANNEL_OPERATOR_KEY=<64 hex — SECRET, never leaves this machine>
 ```
