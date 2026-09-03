@@ -193,15 +193,28 @@ as rotate.
 
 The HTTP surface behind `ct-agent channel register` (see
 [ct-agent CLI commands]({{ '/reference/cli/' | relative_url }})) and the self-service provisioning flow
-in [Set up an Agent-Fabric channel]({{ '/how-to/join-a-channel/' | relative_url }}). All three require an
-OIDC bearer token, same as `/me/pipelines`; the `owner` is always the verified token subject, never a
-request field, so a caller can only register or manage channels they own.
+in [Set up an Agent-Fabric channel]({{ '/how-to/join-a-channel/' | relative_url }}). Every route below
+requires an OIDC bearer token, same as `/me/pipelines`; the `owner` is always the verified token subject,
+never a request field, so a caller can only register or manage channels they own.
 
 **`POST /me/channels`** `{"channel": "<64 hex>", "operator_pubkey": "<64 hex>"}` — register a channel
 you own. `channel` is any 32-byte hex id you pick (doesn't have to be derived — `channel_id_for_link` or
 `channel_id_for_pipeline_role` are just the conventions this platform's own tooling uses to avoid an
 out-of-band ID exchange, not a server-enforced requirement). `403` if that channel id is already owned by
 a different subject.
+
+**`GET /me/channels`** — every channel you own (hex ids), sorted. `{"channels": [...]}`. The missing
+counterpart to registering — no need to remember ids yourself.
+
+**`DELETE /me/channels/:channel`** — deregister a channel you own (deletes members, allow-list, the
+lot). Owner-scoped like every other route here: a non-owner or non-existent channel gets `403`, never
+a membership/existence leak.
+
+**`POST /me/channels/:channel/grants/:holder`** `{"grant": "<278 hex>"}` — deposit an already-signed
+member grant for persistent, re-fetchable pickup through that member's own portal session
+(`GET /portal/channels/:channel/grant`) — this server never holds the operator private key, only the
+signed bytes; a stored grant is useless without the member's own private holder key. `400` if the
+grant's embedded channel/holder ids don't match the path.
 
 **`POST /me/channels/:channel/members`** `{"holder": "<64 hex>", "noise_pubkey": "<64 hex>", "noise_attestation": "<128 hex>"}`
 — add a member. `noise_attestation` is the member's own ed25519 signature over
