@@ -105,12 +105,12 @@ configured bridge peer" even though the grant itself is valid.
 </div>
 
 <div class="callout warn">
-<strong>Opting out of just the manifest-install capability (ct-agent v0.7.23+):</strong> once the
-portal's manifest-install picker does get wired in, you don't have to accept it just because you've
-otherwise granted the bridge — set <code>CT_CHANNEL_BRIDGE_DISABLE_MANIFEST_INSTALL</code> on your
-own <code>channel --serve</code> process and it refuses <code>bridge/manifest-install</code>
-unconditionally, for every caller including the bridge itself, while leaving the rest of the tranche
-(status, config, channel members, allow-list, manifest listing) working normally.
+<strong>Opting out of just the manifest-install capability (ct-agent v0.7.23+):</strong> you don't have
+to accept manifest-install just because you've otherwise granted the bridge — set
+<code>CT_CHANNEL_BRIDGE_DISABLE_MANIFEST_INSTALL</code> on your own <code>channel --serve</code>
+process and it refuses <code>bridge/manifest-install</code> unconditionally, for every caller
+including the bridge itself, while leaving the rest of the tranche (status, config, channel
+members, allow-list, manifest listing) working normally.
 </div>
 
 ## Sharing a tunnel — visible, not usable yet
