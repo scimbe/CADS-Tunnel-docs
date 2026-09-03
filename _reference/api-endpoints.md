@@ -230,6 +230,18 @@ an empty-list response indistinguishable from "no members yet".
 **`POST /me/channels/:channel/members/:holder/remove`** — revoke a member, no body. Same `403` if you're
 not the owner.
 
+**`POST /me/rooms`** `{"operator_pubkey": "<64 hex>", "holders": ["<64 hex>", ...]}` — register every
+pairwise channel a full-mesh room needs in one call, instead of deriving and registering `C(N,2)`
+channels by hand (ADR-0023's video-call/multicast follow-up). Each pair's channel id is the same
+`channel_id_for_link` derivation `/me/channels` itself is built on — this route is a convenience wrapper
+around the identical registration path, not a new primitive. `400` for fewer than 2 holders, more than
+12 holders (`C(12,2)` = 66 channels, a sanity cap not a real room-size limit), a malformed pubkey, or a
+duplicate holder. Idempotent and additive — re-posting an overlapping or superset holder list
+re-registers existing pairs harmlessly and only adds the new ones, the natural way to grow a room. `409`
+if any derived pair channel is already owned by a different subject — unlike `/me/channels` above, this
+route never accepts `confirm_rekey` (#747): a room re-POST must never silently rotate an existing pair's
+operator key. Response: `{"channels": [{"a": "<holder>", "b": "<holder>", "channel": "<channel id>"}, ...]}`.
+
 ## Self-service channel allow-list & claim
 
 The self-service alternative to hand-signing a grant for every new member (the flow above, and
