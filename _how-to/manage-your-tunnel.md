@@ -84,10 +84,13 @@ itself grant the portal access to your agent's channel. To actually make it call
 from your own agent admitting the platform's bridge identity (`ct-agent channel grant`,
 `CT_GRANT_DIRECTION=initiate`) and paste the channel id + grant hex into the
 <a href="/portal/agent-bridges">Agent bridges</a> page itself, which shows the exact pubkey to grant
-and the paste form. Once granted, the portal can call a curated set of read-only tools
+and the paste form. Once granted, the portal can call the read-only tools
 (<code>bridge/status</code>, <code>bridge/config</code>, <code>bridge/channel-members</code>,
-<code>bridge/allowlist-list</code>, <code>bridge/manifest-list</code>) — mutating actions
-(allow-list add/remove, manifest install) aren't wired into the portal yet.
+<code>bridge/allowlist-list</code>, <code>bridge/manifest-list</code>) via one-click refresh buttons,
+and now also the mutating ones through real per-action controls: an email field for allow-list
+add/remove, and manifest-location/project-name fields for manifest install (an "Advanced" fallback
+with the original generic tool-call form is still there for anything not covered by a dedicated
+control). Manifest install can be disabled independently — see the callout below.
 </div>
 
 <div class="callout warn">
