@@ -197,11 +197,30 @@ in [Set up an Agent-Fabric channel]({{ '/how-to/join-a-channel/' | relative_url 
 requires an OIDC bearer token, same as `/me/pipelines`; the `owner` is always the verified token subject,
 never a request field, so a caller can only register or manage channels they own.
 
-**`POST /me/channels`** `{"channel": "<64 hex>", "operator_pubkey": "<64 hex>"}` — register a channel
-you own. `channel` is any 32-byte hex id you pick (doesn't have to be derived — `channel_id_for_link` or
-`channel_id_for_pipeline_role` are just the conventions this platform's own tooling uses to avoid an
-out-of-band ID exchange, not a server-enforced requirement). `403` if that channel id is already owned by
-a different subject.
+**`POST /me/channels`** `{"channel": "<64 hex>", "operator_pubkey": "<64 hex>", "confirm_rekey": <bool, optional>}`
+— register a channel you own. `channel` is any 32-byte hex id you pick (doesn't have to be derived —
+`channel_id_for_link` or `channel_id_for_pipeline_role` are just the conventions this platform's own
+tooling uses to avoid an out-of-band ID exchange, not a server-enforced requirement). `403` if that
+channel id is already owned by a different subject.
+
+Re-sending the **same** `operator_pubkey` for a channel you already own is an idempotent `200`, nothing
+written. A **different** `operator_pubkey` for a channel you already own is refused with `409 Conflict`,
+nothing written, and this exact body:
+
+```
+channel is already registered with a different operator_pubkey; re-send with "confirm_rekey": true to rotate it (every grant signed by the previous operator will stop verifying)
+```
+
+Only `"confirm_rekey": true` rotates the operator in place — `200`, the channel keeps its id and its
+member rows, an admin audit entry `channel_operator_rekeyed` is written (actor = your subject, detail =
+old/new key hex), and every grant signed by the previous operator stops verifying at the broker from that
+moment on. That's a deliberate, logged cut-over for the channel's existing members, never a silent one:
+before [#747](https://github.com/scimbe/CADS-Tunnel/issues/747) this route was an unconditional upsert,
+so the mismatch case replaced the operator with no refusal and no trail. Clients that don't send the
+field at all (every `ct-agent` released before the flag exists) get the `409`, the fail-safe direction.
+Fixed in [#750](https://github.com/scimbe/CADS-Tunnel/pull/750), 2026-09-03 — the responses above are
+taken from the handler and its test suite rather than captured from a live call like the rest of this
+page.
 
 **`GET /me/channels`** — every channel you own (hex ids), sorted. `{"channels": [...]}`. The missing
 counterpart to registering — no need to remember ids yourself.
@@ -229,6 +248,15 @@ an empty-list response indistinguishable from "no members yet".
 
 **`POST /me/channels/:channel/members/:holder/remove`** — revoke a member, no body. Same `403` if you're
 not the owner.
+
+**`POST /me/rooms`** `{"operator_pubkey": "<64 hex>", "holders": ["<64 hex>", ...]}` → `{"channels":
+[{"a", "b", "channel"}, ...]}` — register every pairwise channel a full-mesh room of `holders` needs in
+one call (each pair's id is `channel_id_for_link`, registered exactly as an individual `POST
+/me/channels` would). Idempotent and additive for the same operator, so re-posting with a grown holder
+list only adds the new pairs. `409` if any derived pair channel is already owned by another subject — and,
+same guard as above, `409` if an existing pair channel already carries a **different** operator: rooms
+never re-key a channel, and this route deliberately has no `confirm_rekey`. Rotate that one channel via
+`POST /me/channels` first, then re-post the room.
 
 ## Self-service channel allow-list & claim
 

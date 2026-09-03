@@ -25,6 +25,22 @@ The forward path isn't recovery — it's provisioning a **new** channel with a *
 reusing both members' *existing* holder/noise identities unchanged. Neither member has to regenerate
 anything or lose continuity; only the channel id and the grants change.
 
+<div class="callout">
+<strong>Since 2026-09-03 there is a second option that keeps the channel id</strong>
+(<a href="https://github.com/scimbe/CADS-Tunnel/issues/747">#747</a>): the account that <em>owns</em> the
+channel registration can rotate its operator in place — <code>POST /me/channels</code> with the existing
+<code>channel</code>, the new <code>operator_pubkey</code>, and <code>"confirm_rekey": true</code>. This
+needs the owner's OIDC bearer token, not the lost operator key; the channel id and its member rows stay,
+so steps 2, 3 and 6 below collapse to "mint new grants" (step 4). Two things to know before choosing it:
+every grant signed by the previous operator stops verifying the moment the rotation lands (the
+still-valid-until-expiry grace described above is gone), and the rotation is recorded in the admin
+audit log as <code>channel_operator_rekeyed</code> — which is also why ownership of a registration
+matters more than pure bookkeeping. Without the flag the same call is a <code>409</code>, so
+<code>ct-agent channel register</code> as released today cannot do this by itself (a
+<code>--rekey</code> flag is a follow-up, not yet released); use the raw HTTP call from
+<a href="{{ '/reference/api-endpoints/' | relative_url }}#self-service-channel-registry">API endpoints</a>.
+</div>
+
 ## What you need before starting
 
 - A `ct-agent` binary (any release; this doesn't need a CADS-Tunnel checkout — the standalone binary from

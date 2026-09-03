@@ -49,8 +49,25 @@ CT_OIDC_TOKEN=<bearer token> \
 ```
 
 Real output, actually run: `registered channel add9ea39...ce with the control plane` — a plain
-`eprintln!`, exit `0`. Re-running it for a channel you already own is harmless (idempotent upsert),
-confirmed by running it twice.
+`eprintln!`, exit `0`. Re-running it for a channel you already own with the **same** operator key is
+harmless (idempotent, nothing written), confirmed by running it twice. Re-running it with a
+**different** `operator_pubkey` is not: since
+[#747](https://github.com/scimbe/CADS-Tunnel/issues/747) the control plane refuses that with `409`
+and writes nothing — before, it silently replaced the operator, and every grant the old key had signed
+stopped verifying. Rotating an operator on purpose is an explicit, audit-logged opt-in on the HTTP API
+(`"confirm_rekey": true`, see
+[API endpoints]({{ '/reference/api-endpoints/' | relative_url }}#self-service-channel-registry)); a
+`ct-agent` released today has no flag for it and just reports the `409`.
+
+<div class="callout warn">
+<strong>Before you run <code>channel register</code>, check which channel id it's about to target.</strong>
+It reads <code>CT_GRANT_CHANNEL</code> (the allow-list commands also accept <code>CT_CHANNEL_ID</code>),
+and a stale export from an earlier session is the real near-miss behind #747: a leftover value made
+<code>channel register</code> point at an existing production channel instead of the freshly derived
+one — no damage that time only because the operator key happened to be the same. Run
+<code>echo "$CT_CHANNEL_ID" "$CT_GRANT_CHANNEL"</code> first and <code>unset</code> anything you didn't
+set on purpose in this shell.
+</div>
 
 There's no CLI wrapper for the next part — register each member directly against the HTTP API
 (`POST /me/channels/:channel/members`, see [API endpoints]({{ '/reference/api-endpoints/' | relative_url }})

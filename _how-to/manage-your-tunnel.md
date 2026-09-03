@@ -94,6 +94,38 @@ control). Manifest install can be disabled independently — see the callout bel
 </div>
 
 <div class="callout warn">
+<strong>If every call fails with "closed stream"</strong> — the portal shows
+<code>channel session error: closed stream</code> and, at the same moment, your own
+<code>channel --serve</code> log shows <code>serve session ended with error (#200): edge relay park
+expired with no partner within the park window (#21)</code>, with admission itself succeeding and the
+edge log showing no trace of the channel at all — that was
+<a href="https://github.com/scimbe/CADS-Tunnel/issues/745">#745</a>, a bug in this dialer, not in your
+setup. It performed only the rendezvous hop on the broker port (<code>:4435</code>), whose contract is
+"ack, then close", and then tried to run the Noise session on that already-closed stream, while your
+relay-only agent had parked on the relay port (<code>:4436</code>) waiting for a relay join that never
+came. Since <a href="https://github.com/scimbe/CADS-Tunnel/pull/749">#749</a> (2026-09-03) the dialer
+performs the same two hops <code>ct-agent</code>'s own relay-only initiator does — rendezvous on
+<code>:4435</code>, then a separate connection to the relay on <code>:4436</code> that carries the
+session. If you still see exactly this pair of messages, the control plane you're talking to predates
+the fix.
+
+Nothing changes on your side: the relay-only acceptor from
+<a href="{{ '/how-to/broker-mediated-channel/' | relative_url }}">Set up a broker-mediated channel</a>
+(<code>CT_CHANNEL_RELAY_ONLY=1</code>, <code>CT_CHANNEL_SERVE=1</code>, <code>CT_CHANNEL_BROKER</code> +
+<code>CT_CHANNEL_RELAY</code>) is exactly what the dialer expects. For a <strong>self-hosted control
+plane</strong> the dialer now needs a relay address as well as the broker: it uses
+<code>CT_CHANNEL_RELAY</code> (<code>host:port</code>, the same variable the installer already emits for
+ct-agent) if set, otherwise the broker's host on <code>CT_CP_CHANNEL_RELAY_PORT</code> (default
+<code>4436</code> — the port <code>GET /network-info</code> already reports). An unresolvable relay
+disables the dialer with a boot-time warning, same as an unresolvable broker; the boot log line
+<code>Agent bridges dialer enabled (holder=…, broker=…, relay=…)</code> shows which it picked. The hosted
+deployment needed no configuration change.
+</div>
+<!-- Screenshot refresh wanted here: the Agent bridges page's Status tile/button showing a successful
+     bridge/status result after #745 (captured via the README's Docker-Playwright pattern). Not produced
+     in this text-only pass. -->
+
+<div class="callout warn">
 <strong>Easy to miss:</strong> granting the bridge into your channel is necessary but not sufficient.
 Your own <code>channel --serve</code> process only registers the <code>bridge/*</code> tools at all
 when it's started with <code>CT_CHANNEL_BRIDGE_PEER</code> set to the bridge's own <strong>Noise</strong>

@@ -142,3 +142,7 @@ The broker-mediated path (using the grant from step 4 instead of pinning keys di
 needs the other's address in advance) needs the edge's broker/relay infrastructure, not just two local
 processes — now fully click-tested, including the control-plane registration step direct-address never
 needs: see [Set up a broker-mediated channel]({{ '/how-to/broker-mediated-channel/' | relative_url }}).
+Before that registration step, check `echo "$CT_CHANNEL_ID" "$CT_GRANT_CHANNEL"` for a stale export —
+`channel register` targets whatever channel id is exported, and a different operator key for a channel
+you already own is now a `409`, not a silent replace (see
+[that page's caution]({{ '/how-to/broker-mediated-channel/' | relative_url }}#register-the-channel-with-the-control-plane)).
