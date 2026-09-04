@@ -109,6 +109,16 @@ performs the same two hops <code>ct-agent</code>'s own relay-only initiator does
 session. If you still see exactly this pair of messages, the control plane you're talking to predates
 the fix.
 
+<strong>If the call instead pairs and then times out</strong> — the portal shows
+<code>timed out</code> after almost exactly 20 seconds, while your <code>channel --serve</code> log
+shows the session being accepted (<code>plane-brokered Accept … persistent serve</code>) and then
+nothing but its idle heartbeat — that was the second half of the same issue, fixed by
+<a href="https://github.com/scimbe/CADS-Tunnel/pull/760">#760</a> (2026-09-04). The dialer sent the
+JSON-RPC request into the Noise session without the length prefix your agent's request loop reads
+first, so the agent waited for a message that never completed and logged nothing. Again a dialer bug,
+not your setup, and again it takes effect with the control plane that carries the fix — no ct-agent
+update is needed.
+
 Nothing changes on your side: the relay-only acceptor from
 <a href="{{ '/how-to/broker-mediated-channel/' | relative_url }}">Set up a broker-mediated channel</a>
 (<code>CT_CHANNEL_RELAY_ONLY=1</code>, <code>CT_CHANNEL_SERVE=1</code>, <code>CT_CHANNEL_BROKER</code> +
