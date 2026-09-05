@@ -36,28 +36,28 @@ tunnel pickers (e.g. the topology editor's tunnel dropdown), not the hostname or
 renaming never breaks anything already pointing at your tunnel. Owner-scoped like every other action on
 this page; a blank name is rejected.
 
-## Certificate offer lapsed: auto-requeue, and the opt-out
+## If your certificate offer lapsed: Erneut anfragen
 
 When a tunnel is queued for its own Grün certificate and the 48-hour claim window closes before
 `ct-agent certificate` completes the order (see the
 [admission queue]({{ '/explanation/certificate-tiers/' | relative_url }}#the-gelbgrün-admission-queue)),
-**since [#758](https://github.com/scimbe/CADS-Tunnel/issues/758) (2026-09-03) your hostname automatically
-re-enters the queue** with a fresh position at the back of the line — nothing to click, nothing to notice
-unless you're watching. Get `ct-agent certificate` running again (or restart it if it's still running)
-before the next offer arrives, since re-queuing doesn't retry the ACME order for you.
+its row shows a German **Erneut anfragen** ("request again") button instead of a queue position. This is
+the only way back in — a lapsed claim does not automatically re-enter the queue on its own. Clicking it:
 
-If your tunnel never runs `ct-agent certificate` at all — a browser-tunnel-only setup has no reason to —
-this cycle just repeats forever with no effect on you either way; the shared Gelb certificate keeps
-working the whole time. If you'd rather make that explicit and stop the tunnel from cycling through the
-queue at all, there's a checkbox for it on your tunnel's row: **"Bleib dauerhaft auf dem gemeinsamen
-Zertifikat (kein eigenes Grün)"**. Opting in removes your tunnel from the admission queue entirely — no
-more offers, no more lapses, permanently Gelb until you un-check it.
+- is a no-op if your tunnel isn't actually in the `lapsed` state (confirmed against this control plane's
+  own test suite — calling it early, or twice, never does anything unexpected),
+- otherwise puts your hostname back at the **end** of the queue with a fresh position, not its old spot,
+- is owner-scoped like every other action on this page — nobody else can reclaim your slot for you.
 
-A **Erneut anfragen** ("request again") button can still appear on a tunnel stuck in a legacy `lapsed`
-state from before this fix — clicking it is a no-op if your tunnel isn't actually in that state
-(confirmed against this control plane's own test suite), otherwise it does the same thing the automatic
-requeue now does on its own. You're very unlikely to ever see this button on a tunnel created after
-2026-09-03.
+Once you click it, get `ct-agent certificate` running again (or restart it if it's still running) before
+the next offer arrives — the button re-enters the queue, it doesn't retry the ACME order for you.
+
+<div class="callout">
+An automatic-requeue fix plus a permanent shared-certificate opt-out checkbox are merged
+(<a href="https://github.com/scimbe/CADS-Tunnel/issues/758">#758</a>) but not deployed to this control
+plane yet — this page describes the button you'll actually see today. Once that ships, a lapsed claim
+will re-enter the queue on its own and this section will be rewritten accordingly.
+</div>
 
 ## Revoke a tunnel
 
