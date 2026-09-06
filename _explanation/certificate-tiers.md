@@ -67,17 +67,15 @@ CA is out of budget, your hostname simply waits at the back of a FIFO queue unti
 Once the sweep offers you a CA, you're in a **48-hour claim window**: `ct-agent certificate` needs to
 actually complete an order against that CA before the window closes. Miss it — the agent wasn't running,
 the DNS-01 exchange kept failing, whatever the reason — and the offer lapses: the CA assignment is
-cleared and your hostname doesn't automatically re-enter the queue. From the portal's tunnels page, a
-lapsed hostname shows a **Erneut anfragen** ("request again") button that puts it back at the end of the
-line; there's no equivalent from `ct-agent` itself today — see
-[Manage your tunnel from the portal]({{ '/how-to/manage-your-tunnel/' | relative_url }}#if-your-certificate-offer-lapsed-erneut-anfragen)
-for exactly what clicking it does.
+cleared, and your hostname **automatically re-enters the back of the queue** with a fresh position
+([CADS-Tunnel#758](https://github.com/scimbe/CADS-Tunnel/issues/758), live) — no portal click needed. See
+[Manage your tunnel from the portal]({{ '/how-to/manage-your-tunnel/' | relative_url }}#if-your-certificate-offer-lapses-automatic-requeue-or-stay-on-the-shared-certificate)
+for the opt-out checkbox if you'd rather stay on the shared Gelb certificate permanently instead of being
+reconsidered every time.
 
-An automatic-requeue fix plus a permanent opt-out checkbox are merged
-([CADS-Tunnel#758](https://github.com/scimbe/CADS-Tunnel/issues/758)) but not yet deployed to this control
-plane — many tunnels never run `ct-agent certificate` at all (a browser-tunnel-only setup has no reason
-to), so every one of them silently dead-ends at "lapsed" today, a real fleet-wide gap the merged fix
-closes once it ships.
+Many tunnels never run `ct-agent certificate` at all (a browser-tunnel-only setup has no reason to) — for
+those, the opt-out checkbox is the honest long-term state, not a repeating lapse-and-requeue cycle nobody
+is ever going to act on.
 
 <div class="callout">
 The public <code>GET /agent/acme-admission/:routing_token/:hostname</code> endpoint (see
