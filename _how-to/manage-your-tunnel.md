@@ -36,27 +36,26 @@ tunnel pickers (e.g. the topology editor's tunnel dropdown), not the hostname or
 renaming never breaks anything already pointing at your tunnel. Owner-scoped like every other action on
 this page; a blank name is rejected.
 
-## If your certificate offer lapsed: Erneut anfragen
+## If your certificate offer lapses: automatic requeue, or stay on the shared certificate
 
 When a tunnel is queued for its own Grün certificate and the 48-hour claim window closes before
 `ct-agent certificate` completes the order (see the
 [admission queue]({{ '/explanation/certificate-tiers/' | relative_url }}#the-gelbgrün-admission-queue)),
-its row shows a German **Erneut anfragen** ("request again") button instead of a queue position. This is
-the only way back in — a lapsed claim does not automatically re-enter the queue on its own. Clicking it:
+it no longer dead-ends — the tunnel is **automatically requeued** at the back of the line with a fresh
+position, no click needed (<a href="https://github.com/scimbe/CADS-Tunnel/issues/758">#758</a>, live).
+Get `ct-agent certificate` running again (or restart it if it's still running) before the next offer
+arrives, since requeuing doesn't retry the ACME order for you.
 
-- is a no-op if your tunnel isn't actually in the `lapsed` state (confirmed against this control plane's
-  own test suite — calling it early, or twice, never does anything unexpected),
-- otherwise puts your hostname back at the **end** of the queue with a fresh position, not its old spot,
-- is owner-scoped like every other action on this page — nobody else can reclaim your slot for you.
-
-Once you click it, get `ct-agent certificate` running again (or restart it if it's still running) before
-the next offer arrives — the button re-enters the queue, it doesn't retry the ACME order for you.
+Every non-offered Gelb row also has a checkbox: **"Bleib dauerhaft auf dem gemeinsamen Zertifikat (kein
+eigenes Grün)"**. Check it to opt out of the Grün queue entirely — your tunnel stays on the shared Gelb
+certificate indefinitely and is never reconsidered for its own Grün slot until you uncheck it again
+(owner-scoped like every other action on this page).
 
 <div class="callout">
-An automatic-requeue fix plus a permanent shared-certificate opt-out checkbox are merged
-(<a href="https://github.com/scimbe/CADS-Tunnel/issues/758">#758</a>) but not deployed to this control
-plane yet — this page describes the button you'll actually see today. Once that ships, a lapsed claim
-will re-enter the queue on its own and this section will be rewritten accordingly.
+An older manual <strong>Erneut anfragen</strong> ("request again") button still appears for any tunnel
+that was already stuck in the pre-#758 <code>lapsed</code> state before this shipped — a one-time legacy
+case, not something a newly-lapsed claim reaches anymore. It's a no-op on any tunnel that isn't actually
+in that state.
 </div>
 
 ## Revoke a tunnel
