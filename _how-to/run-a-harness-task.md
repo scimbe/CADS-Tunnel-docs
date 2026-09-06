@@ -75,9 +75,12 @@ CT_MANIFEST_WORK_DIR="$PWD/work" \
 ./ct-agent manifest activate
 ```
 
-`work/` — `CT_MANIFEST_WORK_DIR` above — is exactly the directory the harness will later be
-containment-scoped to (`CT_HARNESS_BUNDLE_DIR` below), because it's what actually holds the
-manifest's unpacked files.
+`work/` is the *parent* `activate` unpacks into — since ct-agent v0.7.27 (#165) the manifest's
+files actually land in `work/docs-harness-proof/` (`<CT_MANIFEST_WORK_DIR>/<CT_MANIFEST_PROJECT_NAME>`,
+created fresh; a non-empty target is refused, naming what's already there). That per-project
+subdirectory — not `CT_MANIFEST_WORK_DIR` itself — is what the harness is later containment-scoped
+to (`CT_HARNESS_BUNDLE_DIR` below), and it's where you'll find the `.ct-agent-activation.json`
+marker the harness checks before it will run against it.
 
 ## 2. Sign a task
 
@@ -207,8 +210,12 @@ regardless of the run's final outcome).
 - `CT_HARNESS_TRUST_ALLOWLIST` (comma-separated 64-hex publisher pubkeys) or
   `CT_HARNESS_TRUST_ALLOWLIST_FILE` (one per line) — exactly one of the two, required; an empty
   allowlist is refused outright rather than silently allowing everything.
-- `CT_HARNESS_BUNDLE_DIR` — the manifest's own already-activated work directory (`CT_MANIFEST_WORK_DIR`
-  from step 1).
+- `CT_HARNESS_BUNDLE_DIR` — the manifest's own already-activated project directory, i.e.
+  `<CT_MANIFEST_WORK_DIR>/<CT_MANIFEST_PROJECT_NAME>` from step 1, not `CT_MANIFEST_WORK_DIR`
+  itself (since ct-agent v0.7.27). The harness refuses to run if this directory's
+  `.ct-agent-activation.json` marker names a different manifest, is corrupt, or is missing
+  entirely — the last case only bypassable with `CT_HARNESS_ALLOW_UNMARKED_BUNDLE=1`, for a
+  directory activated by an older ct-agent.
 - `CT_HARNESS_LITELLM_URL` / `CT_HARNESS_LITELLM_KEY_FILE` — your own LiteLLM proxy and a
   budget-capped virtual key file for it.
 - `CT_HARNESS_ALLOWED_MODELS` — comma-separated model names the harness may call; no default, ever.

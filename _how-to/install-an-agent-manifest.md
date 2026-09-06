@@ -110,7 +110,8 @@ CT_MANIFEST_WORK_DIR="$PWD/work" \
 ./ct-agent manifest activate
 ```
 
-Real output:
+Real output (`install_dir` is new since ct-agent v0.7.27, added next to the report's own fields
+-- see the callout below):
 
 ```json
 {
@@ -120,7 +121,8 @@ Real output:
   "project_name": "docs-example-proof",
   "compose_up": { "exit_code": 0, "duration_ms": 1 },
   "verify": { "exit_code": 0, "duration_ms": 2 },
-  "captured_stdout": "docs-example manifest installed successfully\n"
+  "captured_stdout": "docs-example manifest installed successfully\n",
+  "install_dir": "/path/to/work/docs-example-proof"
 }
 ```
 
@@ -128,6 +130,17 @@ Real output:
 -- one field either way. `captured_stdout` is only populated for Binary kind (Compose's stdout is
 `docker compose`'s own, not the service's). `manifest activate` exits `0` exactly when `status` is
 `"ok"`, so `ct-agent manifest activate && …` scripts correctly.
+
+<div class="callout warn">
+<strong>Since ct-agent v0.7.27 (#165):</strong> <code>CT_MANIFEST_WORK_DIR</code> is the *parent*
+directory, not the install target itself -- each activation unpacks into
+<code>&lt;CT_MANIFEST_WORK_DIR&gt;/&lt;CT_MANIFEST_PROJECT_NAME&gt;</code> (here,
+<code>work/docs-example-proof</code>), refusing to proceed if that specific path already exists
+and isn't an empty directory (naming what's occupying it instead). A successful activation also
+writes <code>.ct-agent-activation.json</code> inside it (manifest id, publisher, project name,
+timestamp, ct-agent version) -- this is what <a href="{{ '/how-to/run-a-harness-task/' | relative_url }}">running a harness task</a>
+against the same directory later verifies before it will run.
+</div>
 
 `CT_MANIFEST_URL` and `CT_MANIFEST_BUNDLE_URL` both accept either an `https://` URL or a local file
 path -- plain `http://` is refused outright (a manifest fetched over plaintext would leak *which*
@@ -150,12 +163,15 @@ CT_MANIFEST_WORK_DIR="$PWD/work2" \
 {
   "status": "rejected",
   "reason": "publisher_not_on_trust_allowlist",
-  "manifest_id": "da58172ed335a31a0a0ffab3cdee8d5583b44867a9125dd4d14e7406bbae5e02"
+  "manifest_id": "da58172ed335a31a0a0ffab3cdee8d5583b44867a9125dd4d14e7406bbae5e02",
+  "install_dir": "/path/to/work2/docs-example-proof-2"
 }
 ```
 
 Exit code `1`. Nothing in the bundle is ever fetched, unpacked, or run once the trust check fails
--- rejection happens before any of that.
+-- rejection happens before any of that. `install_dir` still appears (since v0.7.27): the empty
+per-project directory is claimed *before* the trust check runs, so a rejection leaves behind an
+empty directory at that path, not nothing.
 
 ## Reference
 
