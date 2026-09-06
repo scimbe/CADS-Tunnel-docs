@@ -31,15 +31,16 @@ is only ever needed once, offline: `create` needs no key and no network, `sign` 
 no network, `publish` needs the network but not the key. This page walks the **consumer** side,
 `activate` -- what an operator runs to actually install something.
 
-<div class="callout warn">
+<div class="callout">
 This page does not cover installing a manifest through the portal's "Agent bridges" page.
-<strong>Updated (2026-09-03)</strong> -- the portal UI for granting and calling bridge tools is
-built, but the actual dial from control plane to agent currently fails for real calls
-(<code>bridge/status</code> and the rest of the tranche return a channel session error rather
-than a result) -- tracked as
-<a href="https://github.com/scimbe/CADS-Tunnel/issues/745">CADS-Tunnel#745</a>, open. Don't rely
-on the portal's Agent-bridges page to actually work yet; the CLI flow below remains the only way
-to install a manifest, whether or not you've granted the portal bridge access to a tunnel.
+<strong>Fixed (2026-09-06)</strong> -- the portal-to-agent dial (<code>bridge/status</code> and the
+rest of the tranche) now works: a request-framing bug in the control plane's bridge dialer meant
+every real call silently timed out after 20s
+(<a href="https://github.com/scimbe/CADS-Tunnel/issues/745">CADS-Tunnel#745</a>, closed, verified
+live against a real sidecar post-deploy). The portal's "Agent bridges" page is now a working
+alternative to the CLI flow below for manifest install, provided you've granted the bridge into
+your channel -- see
+[Manage your tunnel from the portal]({{ '/how-to/manage-your-tunnel/' | relative_url }}#agent-bridge--the-registry-toggle-for-real-remote-control).
 </div>
 
 ## 1. Build and sign a manifest (the publisher side)
