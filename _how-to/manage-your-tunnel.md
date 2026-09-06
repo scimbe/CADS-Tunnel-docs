@@ -119,6 +119,16 @@ including the bridge itself, while leaving the rest of the tranche (status, conf
 members, allow-list, manifest listing) working normally.
 </div>
 
+<div class="callout">
+<strong>Updated (CADS-Tunnel#763):</strong> a granted bridge card now checks whether your
+<code>channel --serve</code> sidecar is actually reachable at the edge before offering a call — it
+reads <strong>Sidecar: serving (seen N s ago)</strong> when it recently saw an admission, or
+<strong>Sidecar: not connected</strong> when it hasn't, and disables the call buttons and manifest
+form in the latter case (an "Advanced: call anyway" option still lets you force it). This replaces
+what used to be an always-on 45-second blocking dial that, if your sidecar wasn't actually running,
+just ended in a raw connection error.
+</div>
+
 ## Sharing a tunnel — visible, not usable yet
 
 You'll see a **Share** button next to Install/Revoke — it's disabled. The portal shows it so you know the
