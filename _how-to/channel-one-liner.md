@@ -41,15 +41,26 @@ The direct path needs several secrets set as environment variables before `ct-ag
 run — most sensitively, your Noise (X25519) **private** key
 (`CT_CHANNEL_NOISE_KEY`). Typing or pasting `CT_CHANNEL_NOISE_KEY=<your private key> ct-agent
 channel` directly into a shell puts that key in your shell history and briefly in `ps` output —
-avoidable, but easy to get wrong under time pressure. `channel_one_liner` in the source (the
-`ChannelOneLiner`-based renderer whoever generates your link uses) still supports that inline
-form; it isn't gone, just not what this page recommends.
+avoidable, but easy to get wrong under time pressure.
+
+<div class="callout warn">
+<strong>Updated 2026-09-06</strong> — an inline-secret one-liner renderer (<code>channel_one_liner</code>)
+used to exist in source for this case, but was deleted
+(<a href="https://github.com/scimbe/CADS-Tunnel/issues/620">#620</a>): it had no caller anywhere
+(the live install page renders its own commands independently) and, like its unwired siblings,
+interpolated a peer-supplied <code>host:port</code> value into a shell line unquoted — a real
+code-execution shape on the customer's machine, latent only because nothing was wired to it. It
+was removed rather than hardened. The bootstrap-token form below is unaffected and remains the
+only supported copy-paste path.
+</div>
 
 ## The bootstrap-token form — what actually ships
 
 What `/channel.sh` and `/channel.ps1` are built to consume is the **bootstrap-token** form
-(`channel_one_liner_bootstrap` in source, tracked as issue #100 / SEC90b): a command that carries
-only a short-lived, single-use opaque token — never the real Noise private key:
+(tracked as issue #100 / SEC90b): a command that carries only a short-lived, single-use opaque
+token — never the real Noise private key. `render_channel_sh`/`render_channel_ps1`
+(`crates/control-plane/src/installer.rs`) are the served renderers behind this — unaffected by
+#620's cleanup above, which only removed the separate, never-wired inline-secret renderers:
 
 ```
 curl -fsSL https://bunsenbrenner.org/channel.sh | CT_BOOTSTRAP=<token> sh
