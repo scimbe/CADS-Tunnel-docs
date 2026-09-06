@@ -159,6 +159,16 @@ elsewhere on this site (`authorized_channels`/`topology_authorizes` in
 `crates/control-plane/src/storage.rs`). Remove the edge later and the
 authorization goes with it — no separate revocation bookkeeping.
 
+<div class="callout warn">
+<strong>The edge alone isn't enough (CADS-Tunnel#697, live).</strong> A holder authorized only by
+a drawn topology edge, with no Noise key registered for that channel, is now refused at admission
+(a real `404`, logged as <code>topology-unkeyed</code>) instead of being silently admitted and
+then failing to pair. Register the key first via
+<a href="{{ '/reference/api-endpoints/' | relative_url }}">POST /me/channels/:channel/members</a>
+(see [Join a channel]({{ '/how-to/join-a-channel/' | relative_url }})) — a topology edge alone
+now only expresses *intent*, not a working admission path, until the key exists.
+</div>
+
 ## 5. Confirm it's live via the public status page
 
 `GET /net/<net_uuid>` (the `net_uuid` from step 1, not the topology `id`) is a public,
