@@ -93,6 +93,28 @@ way. Once bound, drawn edges genuinely do authorize real channel admission throu
 the honest caveat on this page ("no route to bind an operator"); it no longer applies.
 </div>
 
+## A drawn edge alone isn't enough — the holder still needs a registered Noise key
+
+[CADS-Tunnel#697](https://github.com/scimbe/CADS-Tunnel/issues/697), decided and shipped
+2026-09-06: a topology-authorized holder with no registered, attested Noise key for the derived
+channel is now **refused at admission** (a plain `404`, identical to a non-member) rather than
+silently let through into a session that could never actually work. Before this, the edge would
+pair such a holder, count a rendezvous success, and then both sides would hard-fail on "no peer
+Noise key" and re-park in an endless loop — a metric that lied and a slot the honest peer's own
+join attempts kept losing.
+
+**What this means in practice**: drawing an edge in the editor and binding the operator key
+(above) authorizes the *channel*, but each holder on that edge still needs its own Noise key
+registered the normal way — `POST /me/channels/:channel/members` with the holder's attested
+key, the same route [Set up an Agent-Fabric channel]({{ '/how-to/join-a-channel/' | relative_url }})
+already documents for the direct-address path. A topology edge is declared intent; the
+key-registration step is what actually makes it live.
+
+**How you'd notice this happening**: the control plane logs `ct-cp: channel-authorize NO
+[topology-unkeyed] channel=... holder=...` naming the exact channel and holder, and `GET /status`
+exposes a running total as `channel_authorize_refused_topology_unkeyed` — non-zero means a drawn
+edge is live whose endpoint never completed the key-registration step.
+
 ## Composing with others: super-peers, sharing, and channel link-info
 
 Three additive capabilities on top of the base graph above — none of them change the exclusive-membership
