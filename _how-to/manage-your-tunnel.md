@@ -129,6 +129,17 @@ what used to be an always-on 45-second blocking dial that, if your sidecar wasn'
 just ended in a raw connection error.
 </div>
 
+<div class="callout">
+<strong>Updated (CADS-Tunnel#763/ct-agent#164):</strong> results are now rendered, not raw JSON:
+<code>bridge/config</code> shows each feature's Feature / State / How-to-enable, naming the exact
+missing sidecar setting (registry URL, login, trust allow-list, work dir, docker, and so on);
+<code>bridge/manifest-list</code> ("Registry manifests") is a table with one inline **Install**
+form per entry instead of a location you'd copy by hand. A genuine error from your own agent (a
+malformed manifest, a disabled capability) now shows as "the agent refused the call" with a
+message and a targeted hint, instead of the older generic "malformed reply from peer". Raw JSON is
+still there for every tool, just behind a disclosure instead of being the only view.
+</div>
+
 ## Sharing a tunnel — visible, not usable yet
 
 You'll see a **Share** button next to Install/Revoke — it's disabled. The portal shows it so you know the
