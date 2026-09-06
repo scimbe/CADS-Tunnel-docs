@@ -288,6 +288,38 @@ and the status flipping to <em>Claimed</em> afterward — the exact round trip d
 read from the handler code. Test channel and account cleaned up afterward.
 </div>
 
+## Owner-minted claim invites (#514)
+
+A second way into the same claim flow above, for when the owner already knows exactly which
+identity should join (a demo's waiting room, a bridge handing a participant something concrete)
+rather than pre-allow-listing an e-mail and waiting: the owner mints a single-use link bound to
+the joiner's own `holder`/`noise_pubkey`/`noise_attestation` — the joiner logs in, clicks confirm,
+and lands with a real membership under their own account. The claim itself stays session-only:
+nothing here lets the owner (or a bridge) claim on someone else's behalf.
+
+Owner-scoped, same bearer-token auth as `/me/channels` above:
+
+**`POST /me/channels/:channel/claim-invites`** `{"holder": "<64 hex>", "noise_pubkey": "<64 hex>",
+"noise_attestation": "<128 hex>", "label": "<optional, ≤64 chars>"}` — mints a 15-minute,
+single-use invitation. The attestation is verified at mint time (same bar as
+`/me/channels/:channel/members`), so a bad key fails here, not in front of the joiner. `404` for
+both "not the owner" and "unknown channel" (existence leaks nothing). Response:
+`{"invite": "<token>", "url": "<portal base>/portal/claim?invite=<token>", "expires_at": <unix>}`.
+
+Session-cookie-authed:
+
+**`GET /portal/claim?invite=<token>`** — shows the channel, label, holder and expiry, with a single
+confirm button. Nothing is claimed on `GET`. Not logged in → login round-trip back to the same
+link. Used/expired → `410`, unknown/malformed token → `404`.
+
+**`POST /portal/claim/confirm`** (form: `invite`) — burns the invitation, then runs the *exact*
+self-service claim `POST /portal/channels/:channel/claim` runs, under the confirming session's own
+subject: allow-lists that session's verified e-mail under the minting owner (the same write
+`POST /me/channels/:channel/allowlist` performs — the membership shows up on both the owner's
+console and the joiner's `/portal/channels` like any other), then lands the claim. A guarded
+single-row update means two racing confirms of one link yield one claim and one `410`, never two
+members. Success redirects to `/portal/channels` with a notice.
+
 ## Agent bridges v2 — portal-driven remote control of your own agent
 
 Session-cookie-authed, owner-scoped exactly like the tunnel management routes elsewhere on this
