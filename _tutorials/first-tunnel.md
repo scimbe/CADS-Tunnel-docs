@@ -59,7 +59,10 @@ CT_AGENT_ORIGIN_PROTO=tcp
 
 `CT_AGENT_MODE=browser` always rides alongside `CT_AGENT_HOSTNAME` — a tunnel with an assigned
 hostname needs the Browser Plane, not just Mesh-Plane channels, or the edge never actually routes
-it. The Install page sets both together; don't drop one if you're copying this by hand.
+it. The Install page sets both together; don't drop one if you're copying this by hand. This is one
+of several `ct-agent` configurations that look superficially similar but do very different
+things — see [Example configurations by use case]({{ '/reference/example-configurations/' | relative_url }})
+if you're piecing one together by hand instead of copying the Install page's block verbatim.
 
 <div class="callout warn">
 <strong>The join token is single-use.</strong> If a run fails partway through, don't reuse the same
