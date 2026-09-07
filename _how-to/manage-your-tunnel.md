@@ -159,6 +159,38 @@ share a Grün/passthrough hostname — see `ct-agent local-auth link`
 ([CLI commands]({{ '/reference/cli/' | relative_url }})) for the agent-side equivalent that covers
 those instead.
 
+## Signed receipts — a tamper-evident record for your own audit trail
+
+The **Uptime & usage** page has a **Signed receipts** section with a **Download receipts** link
+(`/portal/tunnels/:id/receipts.jsonl`). Every time your tunnel's session opens, closes, or reaches
+an hourly byte-count checkpoint, the edge appends one receipt: a hash-chained, ed25519-signed
+record of that event's metadata (never payload — the edge relays ciphertext it can't read in the
+first place). Each receipt's hash covers its own content plus the previous receipt's hash, so
+removing, reordering, or editing anything in the middle of an exported chain breaks verification
+from that point on.
+
+<div class="callout">
+Precisely stated, because it matters for what you can and can't rely on this for: a verified chain
+proves that <em>this edge</em> attested <em>these metadata events</em> — session opens/closes,
+byte volumes, transports, close reasons — <em>in this order</em>, each stamped with the edge's own
+clock. It proves nothing about payload contents, nothing about wall-clock accuracy beyond what the
+edge itself believed, and nothing about events the edge never saw (an edge that's down emits
+nothing — silence is only evidence together with the surrounding receipts staying sequential,
+which the verifier does check).
+</div>
+
+Verify a downloaded file offline with the `verify_receipts` tool from
+[ct-agent-tools](https://github.com/scimbe/ct-agent/tree/main/crates/agent-tools):
+
+```bash
+verify_receipts receipts.jsonl
+```
+
+It checks the chain against the public key named in the file's own header (or one you pass with
+`--pubkey`, if you don't trust the file to name its own key), prints a summary (edge id, sequence
+range, time span, sessions, bytes), and exits `0` on a clean chain, `1` on a verification failure,
+`2` for a usage/file error.
+
 ## Rename a tunnel
 
 Each row has a **Rename** form — it only changes the display label shown here and in the portal's other

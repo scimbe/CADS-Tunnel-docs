@@ -414,6 +414,22 @@ revoked/wrong-host token; otherwise `303` to `https://<host><return>` with a `ct
 cookie scoped to that one host, valid for the link's remaining TTL. A single-use token's URL
 answers `403` on a second visit; the cookie it already set keeps working until it expires.
 
+## Signed forensic receipts (#782)
+
+**`GET /portal/tunnels/:id/receipts.jsonl?since=<seq>`** — session-cookie-authed, owner-scoped
+(404 for foreign/unknown, never 403); `502` with an explanation if the edge can't supply the
+export. Body: a header line `{"pubkey", "edge_id", "tunnel"}` naming the edge's receipts public
+key, then one hash-chained, ed25519-signed receipt per line, oldest first. Each receipt covers a
+session open/close or an hourly byte-count checkpoint — metadata only, never payload content.
+Full walkthrough: [Manage your tunnel]({{ '/how-to/manage-your-tunnel/' | relative_url }}#signed-receipts--a-tamper-evident-record-for-your-own-audit-trail).
+
+Verify a downloaded export offline with `verify_receipts <file> [--pubkey <64 hex>] [--anchor <64
+hex>]` (from `ct-agent`'s `agent-tools` crate) — `--pubkey` overrides the key the file's own header
+names (useful if you don't want to trust an untrusted file to name its own verification key);
+`--anchor` checks that an export starting mid-chain (after retention pruning, or a `since=`
+partial fetch) still links to a specific earlier receipt you already hold. Exit `0` clean, `1`
+verification failure, `2` usage/file error.
+
 ## Agent bridges v2 — portal-driven remote control of your own agent
 
 Session-cookie-authed, owner-scoped exactly like the tunnel management routes elsewhere on this
