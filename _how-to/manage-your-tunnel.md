@@ -57,6 +57,40 @@ every tunnel you own, plus a totals row. A tunnel whose edge doesn't answer show
 row rather than blocking the rest of the page. `/portal/usage.csv` exports the same table as a
 downloadable CSV (one row per tunnel, raw numbers) if you want it in a spreadsheet.
 
+## Dead-man alert — a webhook when a tunnel goes down
+
+Each tunnel's card has an alert block: a webhook URL and a threshold in minutes (1 minute to 7
+days). A background check every minute asks the edge whether the tunnel is reachable; once it's
+been down for longer than your threshold, the portal `POST`s a signed `tunnel.down` to your
+webhook, then a `tunnel.up` the moment it recovers. There's no new notification system behind
+this — the receiver is whatever you already run (a pager bridge, a chat webhook, your own script).
+
+Saving the form shows your webhook secret **once** — copy it then, it's never shown again. Every
+delivery carries `X-CT-Timestamp` (unix seconds) and `X-CT-Signature: sha256=<hex>`, an
+HMAC-SHA256 over the string `"<X-CT-Timestamp>.<raw request body>"` keyed with that secret — the
+same `"<timestamp>.<body>"` convention this platform's own payment webhooks use inbound, so a
+Stripe-style verifier works unmodified. The JSON body:
+
+```json
+{
+  "event": "tunnel.down",
+  "tunnel_id": "<portal tunnel id>",
+  "name": "<tunnel display name>",
+  "since": 1735689600,
+  "threshold_secs": 300,
+  "sent_at": 1735689600
+}
+```
+
+`event` is `"tunnel.down"`, `"tunnel.up"`, or `"tunnel.test"` (from the **Test** button, which
+sends one immediately). `since` is when the current state began — the outage start for `down`,
+the recovery moment for `up`. A failed delivery retries twice more in the same check, 2s then 8s
+apart, and every attempt shows in the card's last-5-deliveries log regardless of outcome.
+Deliveries are capped at 20 per account per hour — past that, a check is logged as "skipped" and
+the tunnel's state doesn't advance, so you won't miss the eventual `tunnel.down`/`tunnel.up` once
+the budget frees up. **Remove** deletes the alert; webhook URLs must be `https://` (plain `http://`
+only to `127.0.0.1`/`localhost`, for testing a local receiver).
+
 ## Rename a tunnel
 
 Each row has a **Rename** form — it only changes the display label shown here and in the portal's other

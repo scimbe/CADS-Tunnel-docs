@@ -345,6 +345,28 @@ row, one concurrent round of edge calls (a non-answering edge shows `n/a` for th
 failed page). **`GET /portal/usage.csv`** — the same table as a downloadable CSV, header plus one
 quoted row per tunnel, raw numbers.
 
+## Dead-man alerts (#777)
+
+Session-cookie-authed, owner-scoped (404 for foreign/unknown, never 403). Full walkthrough:
+[Manage your tunnel]({{ '/how-to/manage-your-tunnel/' | relative_url }}#dead-man-alert--a-webhook-when-a-tunnel-goes-down).
+
+**`POST /portal/tunnels/:id/alert`** `webhook_url=<url>&threshold_minutes=<1..10080>`
+(form-encoded) — create or replace. `400` for a bad URL (must be `https://`, or `http://` only to
+`127.0.0.1`/`localhost`/`[::1]`) or an out-of-range threshold. A fresh create answers with a
+secret-once page instead of a redirect; updating an existing alert keeps its secret.
+
+**`POST /portal/tunnels/:id/alert/test`** — no body, sends one immediate signed `tunnel.test`
+delivery. `429` once the account's 20-deliveries-per-hour budget is spent.
+
+**`POST /portal/tunnels/:id/alert/delete`** — no body.
+
+Webhook contract every delivery follows: `Content-Type: application/json`, headers
+`X-CT-Timestamp` (unix seconds) and `X-CT-Signature: sha256=<hex>` (HMAC-SHA256 over
+`"<X-CT-Timestamp>.<raw body>"`, keyed with the alert's secret — reuse any Stripe-style verifier).
+Body: `{"event": "tunnel.down"|"tunnel.up"|"tunnel.test", "tunnel_id", "name", "since",
+"threshold_secs", "sent_at"}`. Any 2xx acknowledges; otherwise two retries (2s, 8s) inside the
+same check tick.
+
 ## Agent bridges v2 — portal-driven remote control of your own agent
 
 Session-cookie-authed, owner-scoped exactly like the tunnel management routes elsewhere on this
