@@ -12,6 +12,9 @@ This covers the variables you need for a standard browser tunnel (what
 separate set of variables for Agent-Fabric channels, MCP/AgentCard discoverability, and capacity
 offers/auctions — see
 [Environment variables (channels, cards, offers)]({{ '/reference/channel-environment-variables/' | relative_url }}).
+If you're not sure which of the several things `ct-agent` can do is the one you actually want,
+[Example configurations by use case]({{ '/reference/example-configurations/' | relative_url }}) gives
+a complete, working `.env` per use case, side by side.
 
 Pulled directly from `ct-agent`'s source, not from memory — if this drifts from the code, that's a bug
 in this page.

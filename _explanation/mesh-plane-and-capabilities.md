@@ -19,6 +19,12 @@ are not mutually exclusive — see
 [Serve a tunnel and a channel together]({{ '/how-to/tunnel-plus-channel/' | relative_url }}) for running
 both on the same service, as two independent `ct-agent` processes.
 
+Since these two modes share most of their environment-variable namespace, a config for one is often
+only a line or two away from the other — and running the wrong one doesn't fail loudly, it just quietly
+doesn't do what you expected. [Example configurations by use case]({{ '/reference/example-configurations/' | relative_url }})
+lines up complete, working `.env` files for each, plus how to tell which one you're actually running
+from a live process (the log line alone can be misleading).
+
 ## What's actually different
 
 Mesh Plane routes by an **opaque routing token**, not a hostname the operator's edge has to read to
