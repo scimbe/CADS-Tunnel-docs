@@ -49,6 +49,7 @@ distinct set of variables from the ones above. Source-grounded against
 | `CT_OIDC_ISSUER` | `ct-agent login` only: the Keycloak realm URL, e.g. `https://auth.bunsenbrenner.org/realms/ct-demo`. |
 | `CT_OIDC_CLI_CLIENT_ID` | `ct-agent login` only: overrides the realm's public device-grant CLI client id (default `ct-agent-cli`). |
 | `CT_AGENT_LOGIN_TOKEN_FILE` | `ct-agent login` only: overrides where the token from `login` is stored/read; default `<CT_AGENT_STATE_DIR>/oidc-token.json`, else `$HOME/.ct-agent/oidc-token.json`. |
+| `CT_OIDC_TOKEN_FILE` | Unattended operation (ct-agent v0.7.28+, #181): a path to a file holding one long-lived bearer token, for a sidecar that can't answer an interactive `ct-agent login`. Re-read on every resolve so a rotated file needs no restart; trimmed, and an empty file counts as unset. Precedence: `CT_OIDC_TOKEN` > `CT_OIDC_TOKEN_FILE` > the stored `ct-agent login` token. Not the same file as `CT_AGENT_LOGIN_TOKEN_FILE` above, which is where `login` itself stores its own token. |
 | `CT_GRANT_CHANNEL` | `channel grant`/`channel register`: the channel id, 64 hex. |
 | `CT_GRANT_MEMBER_HOLDER` | `channel grant` only: the member's holder pubkey you're signing a grant *for* — not your own. |
 | `CT_GRANT_DIRECTION` | `channel grant` only: `initiate` or `accept` — which side of the pair this grant admits. One grant per member, opposite directions. |
