@@ -135,6 +135,42 @@ closes the door to visitors, it doesn't disconnect your tunnel.
 **Clear** returns a tunnel to unrestricted (always open) — the default for every tunnel that's
 never had a policy set.
 
+## Login gate — protect a tunnel behind a Keycloak login
+
+Each tunnel's card has a **Require login** checkbox: once on, every visitor to that Gelb
+(edge-terminated) hostname is sent through a login (the same Keycloak realm the portal itself
+uses — there's no separate identity provider to set up per tunnel) before Caddy's `forward_auth`
+lets the request through to your origin. One shared platform-wide login backend covers every
+tunnel; what's per-tunnel is only *who's allowed in* once they've logged in.
+
+Two independent ways to control that, both below the checkbox once it's on:
+
+- **An access list** — add specific email addresses one at a time. Only a logged-in account whose
+  email matches an entry gets through; everyone else lands on a "you're not on the access list"
+  page.
+- **Allow any signed-in account** — a separate checkbox that, while on, waves through anyone who
+  can complete the login regardless of email — the access list below it is ignored entirely for as
+  long as this stays on. Useful when you're gating on "has an account on this platform at all"
+  rather than a specific roster, or when you bind identity to something else (your own origin, a
+  downstream broker) once the request reaches you.
+
+A visitor who hits the access-list wall isn't just stuck: the refusal page has a **Request
+access** link that lets them leave their email and an optional note. That shows up on your card as
+a pending request with one-click **Grant** (adds them to the list and clears the request) or
+**Dismiss** — turns a dead end into something you can act on instead of a support email out of
+band.
+
+Your origin sees the visitor's verified email in the `X-Gate-Email` header — set by the platform
+after login, never by the visitor's own request, so your origin can trust it without a second
+check. This only ever applies to Gelb hostnames; a Grün/passthrough hostname's TLS terminates at
+your own `ct-agent`, which the login gate never sees — `ct-agent local-auth link`
+([CLI commands]({{ '/reference/cli/' | relative_url }})) is the agent-side way to admit a specific
+person to one of those instead.
+
+Turning on the [Agent bridge](#agent-bridge--the-registry-toggle-for-real-remote-control) toggle
+below force-enables Require login in the same action — the bridge's own admission always runs
+through this same gate, so the two can't be out of sync.
+
 ## Share links — let one person in without your login
 
 <div class="callout">
@@ -144,8 +180,8 @@ not exposed on any tier.
 Share links are a working, live feature today.
 </div>
 
-When your tunnel has **Require login** on (see the Agent bridge section below — the same checkbox
-gates browser access to your hostname), a "Share links (N active)" block on the card lets you mint
+When your tunnel has **Require login** on (see [Login gate](#login-gate--protect-a-tunnel-behind-a-keycloak-login)
+above), a "Share links (N active)" block on the card lets you mint
 a URL that admits one visitor without them needing an account at all: a link good for 1 hour, 24
 hours, or 7 days, optionally single-use, with an optional label so you remember who it's for.
 Minting shows the full URL exactly once — copy it then. Opening it (`GET /gate/share?host=...`)
