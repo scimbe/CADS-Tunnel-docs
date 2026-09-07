@@ -16,7 +16,7 @@ concepts (overlay modes, exclusive membership, sharing) in more depth; this page
 task-oriented walkthrough.
 
 Every command and endpoint below is checked directly against the source
-(`crates/control-plane/src/service.rs`, `topology.rs`, `storage.rs`) and the 28/28 passing
+(`crates/control-plane/src/service.rs`, `topology.rs`, `storage.rs`) and the 35/35 passing
 `cargo test -p ct-control-plane --lib topology` suite, re-run for this page. The public,
 unauthenticated checks (`GET /net/<uuid>` on an unknown id, `GET /portal/topologies` when
 logged out) and steps 1 and 4 below (creating a topology, the unbound operator panel) were

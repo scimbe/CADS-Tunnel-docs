@@ -12,7 +12,7 @@ The REST surface behind the [Topology Editor](https://bunsenbrenner.org/portal/t
 [Compose a topology]({{ '/how-to/compose-a-topology/' | relative_url }}). Concepts, overlay
 modes, and the exclusive-membership model: [The Topology Editor]({{ '/explanation/topology-editor/' | relative_url }}).
 
-Checked directly against source and the 33/33 passing `cargo test -p ct-control-plane --lib
+Checked directly against source and the 35/35 passing `cargo test -p ct-control-plane --lib
 topology` suite (re-run for this page). Two rows below (marked) were also confirmed live
 against `https://bunsenbrenner.org`; the rest were not click-tested end to end this pass — no
 portal login was available while writing this page. Flagged here rather than presented as
