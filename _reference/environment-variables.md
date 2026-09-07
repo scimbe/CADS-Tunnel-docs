@@ -38,6 +38,23 @@ in this page.
 | `CT_BOOTSTRAP` | Alternative to `CT_AGENT_JOIN_TOKEN`+`CT_AGENT_TOKEN` | — | A single short-lived bootstrap token the setup script redeems server-side for the two tokens above, so they never touch disk/shell history beyond the resulting `.env`. |
 | `CT_AGENT_ONBOARD_TIMEOUT_SECS` | No | unset (wait indefinitely) | Bounds the one-shot onboarding call. Leave it unset for a real tunnel — `CT_AGENT_JOIN_TOKEN` is single-use, so a timeout that fires *after* the control plane already redeemed it leaves you with a dead token and no way to retry, unless `CT_AGENT_STATE_DIR` is also set (restart then restores the already-bound identity instead of re-redeeming). Only set this for a fail-fast CI/smoke-test run — `scripts/e2e-smoke.sh` defaults it to `30`. |
 
+<div class="callout warn">
+<strong>If <code>ct-agent</code> exits immediately with <code>Error: "control-plane returned status 409 Conflict"</code></strong>
+— your <code>.env</code> (or process manager) still has <code>CT_AGENT_JOIN_TOKEN</code> set from an
+earlier successful onboarding. Its mere presence makes a bare <code>ct-agent</code> re-enter the
+one-command onboarding path on every start (see the row above) — but a join token is single-use, so a
+second redeem of an already-consumed one is refused. Control-plane-side there is exactly one enrollment
+failure that maps to this status code, so a bare 409 here always means "this exact token was already
+redeemed", never a network or config issue elsewhere.
+<br><br>
+Two things to check: (1) drop <code>CT_AGENT_JOIN_TOKEN</code> from the environment before starting —
+you're already enrolled, no need to onboard again; (2) set <code>CT_AGENT_STATE_DIR</code> to a
+directory that survives process/container restarts (not a tmpfs or ephemeral volume). With a state
+directory set, <code>ct-agent</code> restores the already-bound identity on every later boot instead of
+re-redeeming, so this can't recur after the next restart either — the exact mechanism that fixed an
+earlier crash-loop outage on this platform's own infrastructure.
+</div>
+
 ## Observability — metrics and forensics stay on your side
 
 Per [ADR-0016](https://github.com/scimbe/CADS-Tunnel/blob/main/docs/adr/0016-agent-side-observability.md):
