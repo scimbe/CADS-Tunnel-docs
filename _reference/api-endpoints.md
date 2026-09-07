@@ -394,6 +394,26 @@ a Gelb (edge-terminated) visitor gets `503` + `Retry-After` + a page naming the 
 a Grün/passthrough connection is closed right after the TLS ClientHello. The owning `ct-agent`'s
 own tunnel connection is never affected — only new visitor connections are refused.
 
+## Time-boxed share links (#780)
+
+Covers only login-gated (Gelb) hostnames — the agent-side `ct-agent local-auth link` covers
+Grün/passthrough hostnames the gate never sees (`ct-agent`#185). Full walkthrough:
+[Manage your tunnel]({{ '/how-to/manage-your-tunnel/' | relative_url }}#share-links--let-one-person-in-without-your-login).
+
+**`POST /portal/tunnels/:id/share-links`** (form-encoded: `ttl` = `1h`|`24h`|`7d`, `single_use`
+checkbox, optional `label` ≤60 chars) — session-cookie-authed, owner-scoped; `400` when "Require
+login" is off or the tunnel already has 50 active links. Answers with a `no-store` page showing
+the URL exactly once; only its SHA-256 is stored.
+
+**`POST /portal/tunnels/:id/share-links/:link_id/revoke`** — ends the link and any live session it
+already granted immediately.
+
+**`GET /gate/share?host=<hostname>&token=<43-char base64url>[&return=/path]`** — no session
+required. `404` for an ungated host; `403` with an explanation page for an expired/already-used/
+revoked/wrong-host token; otherwise `303` to `https://<host><return>` with a `ct_gate_session`
+cookie scoped to that one host, valid for the link's remaining TTL. A single-use token's URL
+answers `403` on a second visit; the cookie it already set keeps working until it expires.
+
 ## Agent bridges v2 — portal-driven remote control of your own agent
 
 Session-cookie-authed, owner-scoped exactly like the tunnel management routes elsewhere on this

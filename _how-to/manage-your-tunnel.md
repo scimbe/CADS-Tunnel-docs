@@ -135,6 +135,30 @@ closes the door to visitors, it doesn't disconnect your tunnel.
 **Clear** returns a tunnel to unrestricted (always open) — the default for every tunnel that's
 never had a policy set.
 
+## Share links — let one person in without your login
+
+<div class="callout">
+This is a DIFFERENT feature from <a href="#sharing-a-tunnel--visible-not-usable-yet">Sharing a
+tunnel — visible, not usable yet</a> below, which is about full-account access grants and remains
+not exposed on any tier.
+Share links are a working, live feature today.
+</div>
+
+When your tunnel has **Require login** on (see the Agent bridge section below — the same checkbox
+gates browser access to your hostname), a "Share links (N active)" block on the card lets you mint
+a URL that admits one visitor without them needing an account at all: a link good for 1 hour, 24
+hours, or 7 days, optionally single-use, with an optional label so you remember who it's for.
+Minting shows the full URL exactly once — copy it then. Opening it (`GET /gate/share?host=...`)
+sets a session cookie scoped to that one hostname only, valid for whatever's left of the link's
+TTL; a single-use link's URL stops working after the first open, but the cookie it already set
+keeps the visitor's session going until it expires. **Revoke** ends both the link and any live
+session it already granted, immediately. Up to 50 active links per tunnel.
+
+This covers exactly what **Require login** covers: any Gelb (edge-terminated) hostname. It cannot
+share a Grün/passthrough hostname — see `ct-agent local-auth link`
+([CLI commands]({{ '/reference/cli/' | relative_url }})) for the agent-side equivalent that covers
+those instead.
+
 ## Rename a tunnel
 
 Each row has a **Rename** form — it only changes the display label shown here and in the portal's other
