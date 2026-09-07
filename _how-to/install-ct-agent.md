@@ -60,8 +60,75 @@ anything.
 
 The script is idempotent: if `.ct-agent-state/` already holds a bound identity, re-running `setup.sh`
 detects it and restores from it rather than re-onboarding — it won't try to replay your (by then already
-consumed) join token. This is what makes it safe to just re-run the script after a reboot or a crash,
-rather than needing a separate "restart" procedure.
+consumed) join token. This is what makes it *safe* to just re-run the script after a reboot or a crash —
+but "safe" isn't the same as "automatic".
+
+<div class="callout warn">
+<strong>Nothing restarts the agent for you unless you set that up yourself.</strong> The guided setup
+script starts the direct-host agent as a plain backgrounded process (<code>nohup ./ct-agent &amp;</code>,
+source-confirmed in <code>setup.sh</code>) — no supervisor, no restart-on-crash, no restart-on-reboot.
+If the process dies (an unhandled panic, an OOM kill, or the host simply rebooting) and nobody notices
+to re-run the script by hand, the tunnel stays down indefinitely — the outside world sees only a
+generic connection-reset, with nothing in the platform's own logs beyond "no agent tunnel for this
+token" (the edge is working correctly; there's just nothing on the other end to route to). This is a
+real, live-observed failure mode, not a hypothetical one — and it's silent from the platform side by
+design: a payload-blind operator has no way to know your origin is supposed to be running.
+<br><br>
+Put the agent under a real supervisor instead:
+</div>
+
+**Direct-host — systemd** (the most robust option on a Linux host you control):
+
+```ini
+# /etc/systemd/system/ct-agent.service
+[Unit]
+Description=ct-agent tunnel
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/ct-agent          # <- wherever your .env and .ct-agent-state/ live
+EnvironmentFile=/opt/ct-agent/.env
+ExecStart=/opt/ct-agent/ct-agent
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+```
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable --now ct-agent
+systemctl status ct-agent               # confirm it's actually running
+```
+
+`Restart=always` covers both a crash and a clean exit — including the exact scenario above, where the
+process died and nobody was watching. Combine with `CT_AGENT_METRICS_LISTEN` and point a `systemd`
+watchdog or your own monitoring at `GET /healthz` (see
+[Environment variables]({{ '/reference/environment-variables/' | relative_url }})) if you want to be
+alerted rather than just silently recovered.
+
+**Docker** — the same gap exists here too, source-confirmed: the setup script's `docker run` doesn't
+set a restart policy at all (`docker run -d --name ct-agent ...`, no `--restart` flag), so a crashed or
+OOM-killed container, or a host reboot, leaves it stopped exactly like the direct-host case. Fix it once,
+after the initial `docker run` from setup:
+
+```bash
+docker update --restart unless-stopped ct-agent
+```
+
+{% raw %}
+```bash
+docker inspect ct-agent --format '{{.HostConfig.RestartPolicy.Name}}'
+# should print: unless-stopped
+```
+{% endraw %}
+
+`unless-stopped` also needs Docker's own service enabled to start on boot (`systemctl enable docker` on
+most Linux distributions — usually already the case if you installed Docker normally) to survive a full
+host reboot, not just an in-place crash.
 
 ## Stopping and resetting
 
