@@ -38,33 +38,57 @@ in this page.
 | `CT_BOOTSTRAP` | Alternative to `CT_AGENT_JOIN_TOKEN`+`CT_AGENT_TOKEN` | — | A single short-lived bootstrap token the setup script redeems server-side for the two tokens above, so they never touch disk/shell history beyond the resulting `.env`. |
 | `CT_AGENT_ONBOARD_TIMEOUT_SECS` | No | unset (wait indefinitely) | Bounds the one-shot onboarding call. Leave it unset for a real tunnel — `CT_AGENT_JOIN_TOKEN` is single-use, so a timeout that fires *after* the control plane already redeemed it leaves you with a dead token and no way to retry, unless `CT_AGENT_STATE_DIR` is also set (restart then restores the already-bound identity instead of re-redeeming). Only set this for a fail-fast CI/smoke-test run — `scripts/e2e-smoke.sh` defaults it to `30`. |
 
-## Observability — metrics stay on your side
+## Observability — metrics and forensics stay on your side
 
 Per [ADR-0016](https://github.com/scimbe/CADS-Tunnel/blob/main/docs/adr/0016-agent-side-observability.md):
 since the operator is payload-blind, per-connection observability can only exist at your own agent.
-`ct-agent` can serve its own metrics locally, in your own open format, to your own stack — nothing routes
-through the platform.
+`ct-agent` can serve its own metrics and status locally, in your own open format, to your own stack —
+nothing routes through the platform.
 
 | Variable | Required | Default | Meaning |
 |---|---|---|---|
-| `CT_AGENT_METRICS_LISTEN` | No | unset (no metrics server) | `host:port` to serve `GET /metrics` on, in Prometheus text exposition format — point your own Prometheus/Grafana at it. |
+| `CT_AGENT_METRICS_LISTEN` | No | unset (no metrics server) | `host:port` to serve `GET /metrics`, `/status`, `/healthz`, and `/events` on — point your own Prometheus/Grafana at the first, a container/systemd/load-balancer probe at the second. |
 
-Six counters, confirmed against source (`ct_common::metrics::TunnelMetrics::render_prometheus`):
+**`GET /metrics`** — Prometheus text exposition format. Twelve series as of ct-agent v0.7.28+
+(#177/#178/#180), confirmed against source (`ct_common::metrics::TunnelMetrics::render_prometheus`
+plus this crate's own `status`/`events`/`masque`/`task_guard` renderers, in that fixed order):
 
 ```
-ct_tunnels_opened_total       — tunnels successfully established
-ct_tunnels_failed_total       — tunnel attempts that failed before or during the handshake
-ct_bytes_to_origin_total      — bytes relayed from client to origin
-ct_bytes_to_client_total      — bytes relayed from origin to client
-ct_handshakes_total           — completed Noise handshakes
-ct_handshake_millis_total     — cumulative handshake latency, milliseconds
+ct_tunnels_opened_total                       — tunnels successfully established
+ct_tunnels_failed_total                       — tunnel attempts that failed before or during the handshake
+ct_bytes_to_origin_total                      — bytes relayed from client to origin
+ct_bytes_to_client_total                      — bytes relayed from origin to client
+ct_handshakes_total                           — completed Noise handshakes
+ct_handshake_millis_total                     — cumulative handshake latency, milliseconds
+ct_agent_registered                           — gauge, 1 while registered with the plane, else 0
+ct_agent_reconnects_total                     — reconnect attempts since process start
+ct_agent_transport{transport="quic"|"tcp-fallback"|"masque"|"none"} — gauge, 1 for the current transport, 0 for the other three
+ct_agent_events_total{kind="..."}             — one series per event taxonomy kind (below)
+ct_agent_masque_dropped_datagrams_total{direction="outbound"|"inbound"} — MASQUE pump drops on a full channel (never blocks; UDP semantics)
+ct_agent_tasks_live                           — gauge, JoinSet-tracked tasks currently running
 ```
 
-Not click-tested against a live tunnel this pass (would mean standing up a throwaway production
-account/tunnel just to scrape it) — validated instead via `ct-agent`'s own passing test suite, which
-binds a real TCP listener, serves the real `/metrics` handler, and scrapes it with a raw HTTP request:
-`cargo test observe:: -p ct-agent` — `3 passed; 0 failed`, re-run hermetically for this page, not
-assumed from an earlier pass.
+**`GET /status`** — JSON snapshot of the same state `ct-agent status` prints (below):
+`version`, `session` (16 hex, per process), `conn`, `uptime_secs`, `transport`, `registered`
+(bool) + `registered_since`, `last_seen_secs_ago`, `reconnects`, `last_error`, `tasks_live`,
+`update_state`, `oidc_credential`, `masque_dropped_datagrams`, `events_ring_write_errors`,
+`healthy` (bool, the same check `/healthz` makes).
+
+**`GET /healthz`** — `200 ok` when registered and the edge was heard from within the last 90
+seconds (a 15-second QUIC liveness tick keeps an idle-but-healthy tunnel from going stale); `503`
+with the reason as the plain-text body otherwise (`"not registered"`, or `"nothing heard in
+Ns"`).
+
+**`GET /events?n=<1..1000>`** — the last `n` lines (default 100) of the on-disk event ring as
+`application/x-ndjson`, newest last. Twelve taxonomy kinds including `registered`,
+`disconnected`, `credential_degraded`, `update_applied`; each line is also appended to
+`<state_dir>/events.jsonl` (1 MiB cap, rotated to `.1`) regardless of whether this listener is
+configured at all.
+
+Re-verified hermetically for this page, not assumed from an earlier pass:
+`cargo test observe:: -p ct-agent` — `9 passed; 0 failed`, binding a real TCP listener and
+scraping/fetching all four routes over it, plus the private-state unit tests for `/status`,
+`/healthz`, and `/events`' clamping behavior.
 
 ## Reliability and connectivity fallbacks
 
