@@ -107,7 +107,7 @@ protocol before that removal. What's live today, source-confirmed in `crates/cli
 fall back serially, but **race** the direct attempt against the Edge relay concurrently, giving direct a
 75ms head start (`DIRECT_HEAD_START`) so a live direct path almost always wins without a slow-but-real
 one being starved by a faster relay. `cargo test -p ct-client --lib transport::`, re-run hermetically for
-this page, is 12/12 passing, including `client_tunnel_auto_falls_through_to_relay_when_the_direct_endpoint_query_stalls`
+this page, is 14/14 passing, including `client_tunnel_auto_falls_through_to_relay_when_the_direct_endpoint_query_stalls`
 and `p2p_or_relay_fallback_times_out_against_a_stalled_edge` — both exercise this exact fallback path.
 
 <div class="callout warn">
