@@ -165,7 +165,11 @@ new precondition for the walkthrough below on a host without a usable sandbox (a
 running unprivileged, or Ubuntu 24.04's own unprivileged-userns restriction, are both realistic
 ways to hit it) -- not click-tested against a real disallowed host for this update, so if `activate`
 now refuses for you with a sandbox-related message, that's this new check working as designed, not
-a bug in the walkthrough.
+a bug in the walkthrough. Check readiness *before* you hit that refusal with
+<code>ct-agent doctor sandbox</code> (v0.7.30+) -- it runs the same probe `activate` does and prints
+one line per failing check with its concrete fix, or `--json` for a fleet-wide script; exit `0`
+means activation will work, `1` means it won't (without the opt-out), `2` means an unsupported OS
+(Windows/macOS -- Compose manifests and `manifest plan` only there).
 </div>
 
 ## 3. The rejection path, for real

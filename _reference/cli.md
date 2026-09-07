@@ -34,6 +34,8 @@ The single most useful fact about each subcommand, since it changes how you'd sc
 | `ct-agent channel agent-card --verify <file>` | **Yes** — re-verifies a card's signature and expiry, prints the result, exits non-zero on failure. |
 | `ct-agent channel` (no further subcommand) | **No** — joins/serves a channel, runs indefinitely. |
 | `ct-agent manifest create\|sign\|publish\|activate` | **Yes**, all four — build/sign/publish a manifest, or fetch+verify+install one, then exit. `activate` exits non-zero when the install itself failed or was rejected. |
+| `ct-agent manifest plan` | **Yes** — dry-run: runs `activate`'s guardrails (trust allowlist, manifest validity) without fetching, unpacking, or running anything, prints the plan and would-refuse reasons, exits `1` if it would refuse. |
+| `ct-agent doctor sandbox [--json]` | **Yes** (v0.7.30+, #183) — checks this host's binary-sandbox readiness (the same `bwrap` probe `manifest activate` uses for a Binary-kind manifest) and prints one line per failing check with its fix, or a fixed-shape JSON object for fleet scripts. Exit `0` ready, `1` not ready, `2` unsupported OS. |
 | `ct-agent harness run` | **Yes** — runs a signed, bounded local-LLM maintenance task against one already-activated manifest's bundle, prints a JSON report, exits. Non-zero exit unless the report's `status` is `"ok"`. See [Run a maintenance task with the harness]({{ '/how-to/run-a-harness-task/' | relative_url }}). |
 | `ct-agent signup <name>` | **Yes** — self-service tunnel registration (no join token needed), prints the routing token to set and run `ct-agent` with, exits. |
 | `ct-agent update` | **Yes** — checks GitHub Releases for a newer tag than this binary's own version and self-updates if one exists, exits. |
