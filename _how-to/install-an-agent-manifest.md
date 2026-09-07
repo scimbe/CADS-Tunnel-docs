@@ -104,6 +104,7 @@ deliberate hard refusal, not an "allow all" default:
 ```bash
 mkdir work
 CT_MANIFEST_URL="$PWD/signed.json" \
+CT_MANIFEST_ALLOW_LOCAL_PATH=1 \
 CT_MANIFEST_TRUST_ALLOWLIST=579b4997c649a9f7341756f54fefaf2155276670987756d72aa281437e2a3784 \
 CT_MANIFEST_PROJECT_NAME=docs-example-proof \
 CT_MANIFEST_WORK_DIR="$PWD/work" \
@@ -146,6 +147,27 @@ against the same directory later verifies before it will run.
 path -- plain `http://` is refused outright (a manifest fetched over plaintext would leak *which*
 manifest you're installing and is tamperable in transit before the signature ever gets checked).
 
+<div class="callout warn">
+<strong>Since ct-agent v0.7.29 (#170):</strong> a local file path (as used throughout this page)
+now needs <code>CT_MANIFEST_ALLOW_LOCAL_PATH=1</code> set on the agent as well -- without it, a
+bare path is refused the same way <code>http://</code> is. The variable name matters: this is
+something the operator running the agent decides, never something a caller (like the portal
+bridge) can set on your behalf. Fetching a real manifest over <code>https://</code> in production
+never needs this flag; it exists for exactly the local dev/proof workflow this page walks through.
+</div>
+
+<div class="callout warn">
+<strong>Since ct-agent v0.7.29 (#183):</strong> activating a <strong>Binary</strong>-kind manifest
+(like this page's example) now requires a working sandbox backend (a <code>bwrap</code> probe:
+user/PID/network namespaces, private loopback) -- activation fails closed on a host where that
+probe doesn't pass, naming <code>CT_ALLOW_UNSANDBOXED=1</code> as the explicit opt-out. This is a
+new precondition for the walkthrough below on a host without a usable sandbox (a container already
+running unprivileged, or Ubuntu 24.04's own unprivileged-userns restriction, are both realistic
+ways to hit it) -- not click-tested against a real disallowed host for this update, so if `activate`
+now refuses for you with a sandbox-related message, that's this new check working as designed, not
+a bug in the walkthrough.
+</div>
+
 ## 3. The rejection path, for real
 
 Same manifest, trust allowlist pointed at a different (unrelated) publisher instead:
@@ -153,6 +175,7 @@ Same manifest, trust allowlist pointed at a different (unrelated) publisher inst
 ```bash
 mkdir work2
 CT_MANIFEST_URL="$PWD/signed.json" \
+CT_MANIFEST_ALLOW_LOCAL_PATH=1 \
 CT_MANIFEST_TRUST_ALLOWLIST=0000000000000000000000000000000000000000000000000000000000000000 \
 CT_MANIFEST_PROJECT_NAME=docs-example-proof-2 \
 CT_MANIFEST_WORK_DIR="$PWD/work2" \

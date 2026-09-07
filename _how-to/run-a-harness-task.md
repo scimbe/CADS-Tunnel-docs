@@ -69,11 +69,20 @@ CT_MANIFEST_HOLDER_KEY=<from channel init> CT_MANIFEST_IN=unsigned.json \
 
 mkdir work
 CT_MANIFEST_URL="$PWD/signed.json" \
+CT_MANIFEST_ALLOW_LOCAL_PATH=1 \
 CT_MANIFEST_TRUST_ALLOWLIST=<your holder pubkey> \
 CT_MANIFEST_PROJECT_NAME=docs-harness-proof \
 CT_MANIFEST_WORK_DIR="$PWD/work" \
 ./ct-agent manifest activate
 ```
+
+<div class="callout warn">
+<strong>Since ct-agent v0.7.29 (#170):</strong> activating from a local file path needs
+<code>CT_MANIFEST_ALLOW_LOCAL_PATH=1</code> set on the agent, as above -- without it, a bare path
+is refused the same way <code>http://</code> is. See
+[Install an agent manifest]({{ '/how-to/install-an-agent-manifest/' | relative_url }}) for the
+full explanation and the related sandbox-activation requirement (#183) for Binary-kind manifests.
+</div>
 
 `work/` is the *parent* `activate` unpacks into — since ct-agent v0.7.27 (#165) the manifest's
 files actually land in `work/docs-harness-proof/` (`<CT_MANIFEST_WORK_DIR>/<CT_MANIFEST_PROJECT_NAME>`,
