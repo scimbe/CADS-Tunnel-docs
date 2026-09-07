@@ -102,6 +102,14 @@ authorizes it at the edge, not on a delay.
 <figcaption>A real run, start to finish (routing token redacted).</figcaption>
 </figure>
 
+<div class="callout warn">
+<strong>This starts the agent, but doesn't keep it running.</strong> A crash, an OOM kill, or a host
+reboot stops it silently — nothing re-launches it for you. For anything beyond a quick local test, set
+up a real supervisor before you rely on this tunnel:
+<a href="{{ '/how-to/install-ct-agent/#restarting-or-re-running' | relative_url }}">Restarting or
+re-running</a> covers the systemd (direct-host) and Docker restart-policy setup.
+</div>
+
 ## 4. Check it's really live
 
 ```bash
