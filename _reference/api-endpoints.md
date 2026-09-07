@@ -320,6 +320,31 @@ console and the joiner's `/portal/channels` like any other), then lands the clai
 single-row update means two racing confirms of one link yield one claim and one `410`, never two
 members. Success redirects to `/portal/channels` with a notice.
 
+## Tunnel connection history, uptime, badges & usage (#776/#778/#783)
+
+Session-cookie-authed, owner-scoped exactly like the tunnel management routes elsewhere on this
+site — an unknown or foreign tunnel id `404`s, never `403`. All of these are fail-open on the
+edge: if the edge doesn't answer, the page explains that rather than rendering zeros. Full
+walkthrough: [Manage your tunnel]({{ '/how-to/manage-your-tunnel/' | relative_url }}).
+
+**`GET /portal/tunnels/:id/uptime`** — uptime over 24h/7d/30d, longest outage in the last 30 days,
+30-day session/byte totals, and the full session table (newest first, capped at 200 rows), plus
+the badge enable/disable controls below.
+
+**`POST /portal/tunnels/:id/badge/enable`** / **`POST /portal/tunnels/:id/badge/disable`** — no
+body. Enabling is idempotent (repeat calls keep the same public id); disabling immediately 404s
+the old badge URL.
+
+**`GET /badge/:public_id.svg`** — no auth, the whole point of a badge being embeddable. `404` for
+anything but an enabled badge's exact `<64 hex>.svg`. Shields-style flat SVG, `uptime 7d` label:
+green ≥99%, yellow ≥95%, red below, grey `n/a` with no history yet. Cacheable
+(`Cache-Control: public, max-age=300`); never reveals the tunnel's hostname, id, or routing token.
+
+**`GET /portal/usage`** — every tunnel you own with its 30-day uptime/sessions/bytes and a totals
+row, one concurrent round of edge calls (a non-answering edge shows `n/a` for that tunnel, not a
+failed page). **`GET /portal/usage.csv`** — the same table as a downloadable CSV, header plus one
+quoted row per tunnel, raw numbers.
+
 ## Agent bridges v2 — portal-driven remote control of your own agent
 
 Session-cookie-authed, owner-scoped exactly like the tunnel management routes elsewhere on this

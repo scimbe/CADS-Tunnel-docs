@@ -29,6 +29,34 @@ client has reached it) shows the Connected badge with no byte line yet — that'
 need to re-run setup on a second machine or after a full local reset (see
 [Install ct-agent]({{ '/how-to/install-ct-agent/' | relative_url }})'s "starting over" section).
 
+## Connection history, uptime & a public status badge
+
+Each tunnel row also has a **Connection history** disclosure — expand it for uptime over the last
+24 hours / 7 days / 30 days and a table of recent sessions (start time UTC, duration or "open",
+transport, bytes in/out, disconnect reason), newest first. Like the Connected badge above, this is
+fed live from the edge and simply says "no sessions recorded yet" rather than showing anything
+misleading when there's no history to show.
+
+For more room, each row also links to a dedicated **Uptime & usage** page
+(`/portal/tunnels/:id/uptime`) with the same three uptime windows, the longest outage in the last
+30 days, 30-day session/byte totals, and the full session table (up to 200 rows — a tunnel that's
+flapped more than that in 30 days under-counts its oldest sessions, noted on the page itself).
+
+That page also has an opt-in **public status badge**: enabling it mints a shields-style SVG at
+`https://bunsenbrenner.org/badge/<64-hex>.svg` — green at ≥99% 7-day uptime, yellow at ≥95%, red
+below, grey "n/a" with no history yet — along with the URL and a ready-to-paste Markdown snippet.
+The badge is deliberately anonymous: no hostname, tunnel id, or routing token appears in it or its
+URL, and disabling it 404s the old link from the very next request. Owner-scoped like every other
+control on this page.
+
+## See usage across every tunnel you own
+
+[bunsenbrenner.org/portal/usage](https://bunsenbrenner.org/portal/usage) ("Usage" in the portal
+nav) is the account-wide view of the same 30-day figures — uptime, sessions, and bytes in/out for
+every tunnel you own, plus a totals row. A tunnel whose edge doesn't answer shows "n/a" for that
+row rather than blocking the rest of the page. `/portal/usage.csv` exports the same table as a
+downloadable CSV (one row per tunnel, raw numbers) if you want it in a spreadsheet.
+
 ## Rename a tunnel
 
 Each row has a **Rename** form — it only changes the display label shown here and in the portal's other
