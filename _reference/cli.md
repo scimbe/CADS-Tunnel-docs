@@ -38,6 +38,9 @@ The single most useful fact about each subcommand, since it changes how you'd sc
 | `ct-agent signup <name>` | **Yes** — self-service tunnel registration (no join token needed), prints the routing token to set and run `ct-agent` with, exits. |
 | `ct-agent update` | **Yes** — checks GitHub Releases for a newer tag than this binary's own version and self-updates if one exists, exits. |
 | `ct-agent local-auth set\|reset\|rotate` | **Yes** — manages the credential `CT_AGENT_LOCAL_AUTH` checks against, without starting the serve loop; `reset`/`rotate` print a fresh generated credential once, exits. |
+| `ct-agent local-auth link --ttl <1h\|24h\|7d\|Ns> [--once] [--label <text>]` | **Yes** — mints a time-boxed share link for the local-auth gate (v0.7.28+, ct-agent#185): the token prints once, `?ct_link=<token>` on any URL to the tunnel sets a session cookie for the link's lifetime; `--once` makes the URL itself redeem only once (the cookie it sets keeps working until expiry). Covers Grün/passthrough and Mesh-Plane hostnames, which the portal's own share links (CADS-Tunnel#780) can't reach. |
+| `ct-agent local-auth links` | **Yes** — lists share links (ids, labels, expiry, state) — never the tokens themselves, which exist only at mint time. |
+| `ct-agent local-auth link-revoke <id>` | **Yes** — revokes one share link; both the URL and any cookie it already set stop working immediately. |
 | `ct-agent relay-node` | **No** — runs the internal-only Circuit-Relay v2 + DCUtR relay node, indefinitely. Never bind its listen address publicly. |
 
 ## Onboarding and serving
