@@ -367,6 +367,16 @@ Body: `{"event": "tunnel.down"|"tunnel.up"|"tunnel.test", "tunnel_id", "name", "
 "threshold_secs", "sent_at"}`. Any 2xx acknowledges; otherwise two retries (2s, 8s) inside the
 same check tick.
 
+## Fleet view (#781)
+
+**`GET /portal/fleet`** — session required, no owner-id path param (it's always "every tunnel
+the caller owns"). One row per tunnel: online/transport/7-day uptime (edge lookups, same as
+elsewhere), bridge mode + sidecar presence, cached agent version + readiness chips from the last
+successful `bridge/status`/`bridge/config` probe (populated via the existing
+`POST /portal/tunnels/:id/agent-bridge/call` route, not a new endpoint), and a version-drift hint
+when more than one cached version is in use across the fleet. No agent is dialed on page load.
+Full walkthrough: [Manage your tunnel]({{ '/how-to/manage-your-tunnel/' | relative_url }}#fleet-view--every-tunnel-in-one-table).
+
 ## Agent bridges v2 — portal-driven remote control of your own agent
 
 Session-cookie-authed, owner-scoped exactly like the tunnel management routes elsewhere on this

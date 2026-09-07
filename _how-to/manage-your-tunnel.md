@@ -91,6 +91,24 @@ the tunnel's state doesn't advance, so you won't miss the eventual `tunnel.down`
 the budget frees up. **Remove** deletes the alert; webhook URLs must be `https://` (plain `http://`
 only to `127.0.0.1`/`localhost`, for testing a local receiver).
 
+## Fleet view — every tunnel in one table
+
+[bunsenbrenner.org/portal/fleet](https://bunsenbrenner.org/portal/fleet) ("Fleet" in the portal
+nav) is one row per tunnel you own: online state, transport + 7-day uptime, Agent bridge mode and
+sidecar presence, cached agent version, and readiness chips (things like "no registry", "no
+login", "no docker", or "all ok") from the last successful bridge probe. Nothing on this page
+dials your agent when it loads — the online/uptime/presence columns are the same fail-open edge
+lookups the tunnels page and the Agent bridges page already make, and the version/readiness
+columns come from whatever the last `bridge/status`/`bridge/config` call happened to cache; a
+never-probed agent shows "unknown"/"not probed" rather than "offline". A **Probe now** button
+appears for any tunnel with a bridge grant — it's the same `bridge/config` call the
+[Agent bridges]({{ '/how-to/manage-your-tunnel/' | relative_url }}#agent-bridge--the-registry-toggle-for-real-remote-control)
+page's own refresh button makes, just from here. A summary line at the top counts tunnels /
+online / bridges served / readiness gaps, and if more than one cached agent version shows up
+across your fleet, a "Version drift" hint calls it out (the edge doesn't currently learn an
+agent's version from its own registration — only from a probe — so this is necessarily
+best-effort, not a live inventory).
+
 ## Rename a tunnel
 
 Each row has a **Rename** form — it only changes the display label shown here and in the portal's other
