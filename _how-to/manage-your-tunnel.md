@@ -109,6 +109,32 @@ across your fleet, a "Version drift" hint calls it out (the edge doesn't current
 agent's version from its own registration — only from a probe — so this is necessarily
 best-effort, not a live inventory).
 
+## Access windows — auto-expiring or scheduled exposure
+
+Each tunnel's card has an "Access window" block for closing it off automatically instead of
+manually revoking and re-onboarding. Two independent pieces, either or both:
+
+- **An expiry** — after this moment the tunnel closes to visitors and stays closed until you
+  explicitly re-open it (**Re-arm 24 h**, once it's expired). Expiry always wins over the schedule
+  below, whatever the schedule says.
+- **A weekly schedule** — day-of-week + start/end time slots in a UTC offset you pick (a fixed
+  offset, not a named timezone — DST is yours to re-select twice a year, not something the edge
+  tracks for you). A slot whose end isn't after its start wraps past midnight (`Fri 22:00 → 02:00`
+  is open Friday evening through Saturday early morning). A schedule with zero slots is the
+  explicit "closed all week" state — different from having no schedule at all, which means no
+  restriction.
+
+Enforcement happens **locally at the edge**, not via a per-request call back to the control
+plane — your policy is pushed to the edge the moment you save it, and rehydrated automatically if
+the edge itself ever restarts. Outside the window, a browser (Gelb) visitor gets a real `503` with
+a `Retry-After` header and a page naming when it reopens (or that no reopening is scheduled, for
+an expired policy with no schedule); a Grün/passthrough hostname's TLS connection is simply closed
+after the handshake starts. Either way, **your `ct-agent` stays connected** the whole time — this
+closes the door to visitors, it doesn't disconnect your tunnel.
+
+**Clear** returns a tunnel to unrestricted (always open) — the default for every tunnel that's
+never had a policy set.
+
 ## Rename a tunnel
 
 Each row has a **Rename** form — it only changes the display label shown here and in the portal's other

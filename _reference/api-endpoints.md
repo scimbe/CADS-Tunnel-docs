@@ -377,6 +377,23 @@ successful `bridge/status`/`bridge/config` probe (populated via the existing
 when more than one cached version is in use across the fleet. No agent is dialed on page load.
 Full walkthrough: [Manage your tunnel]({{ '/how-to/manage-your-tunnel/' | relative_url }}#fleet-view--every-tunnel-in-one-table).
 
+## Access windows (#779)
+
+Session-cookie-authed, owner-scoped. Full walkthrough:
+[Manage your tunnel]({{ '/how-to/manage-your-tunnel/' | relative_url }}#access-windows--auto-expiring-or-scheduled-exposure).
+
+**`POST /portal/tunnels/:id/access`** (form-encoded) — sets an expiry, a weekly schedule, both, or
+(with `rearm=1` alone) re-opens an expired policy for 24 hours while keeping its existing
+schedule. Pushed to the edge immediately; also re-sent automatically after any successful
+authorize-host for that tunnel.
+
+**`POST /portal/tunnels/:id/access/clear`** — no body, returns the tunnel to unrestricted.
+
+Enforcement is entirely edge-local (no per-request control-plane round trip): outside the window,
+a Gelb (edge-terminated) visitor gets `503` + `Retry-After` + a page naming the next change time;
+a Grün/passthrough connection is closed right after the TLS ClientHello. The owning `ct-agent`'s
+own tunnel connection is never affected — only new visitor connections are refused.
+
 ## Agent bridges v2 — portal-driven remote control of your own agent
 
 Session-cookie-authed, owner-scoped exactly like the tunnel management routes elsewhere on this
