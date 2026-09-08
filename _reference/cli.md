@@ -58,6 +58,39 @@ see [Environment variables]({{ '/reference/environment-variables/' | relative_ur
 
 Covered end to end in [Go from Gelb to Grün]({{ '/how-to/gelb-to-gruen/' | relative_url }}).
 
+## SSH through the tunnel (`ct-agent ssh`)
+
+Two subcommands, configured once in `~/.ssh/config` the way cloudflared's `access ssh` is —
+after that, plain `ssh <hostname>` just works:
+
+```bash
+ct-agent ssh <hostname> [--port <n>] [--ca <pem-file>] [--connect-timeout <secs>]
+ct-agent ssh-config <hostname> [--user <name>] [--port <n>] [--ca <pem-file>]
+```
+
+- **`ssh`** is the OpenSSH `ProxyCommand` itself — never run it by hand. It opens a TLS
+  connection to `<hostname>:<port>` (default `443`, SNI = the hostname) and pipes `ssh`'s
+  stdin/stdout through it, trusting the system's public roots plus any certificate given via
+  `--ca` (a private CA, for a lab deployment).
+- **`ssh-config`** prints the stanza that wires the above into `~/.ssh/config`:
+
+  ```
+  Host <hostname>
+    ProxyCommand ct-agent ssh <hostname> [--port <n>] [--ca <pem-file>]
+  ```
+
+  `--user` adds a `User` line; `--port`/`--ca` are only emitted when given (443 is the default
+  and stays implicit).
+
+**Requires Grün tier with `CT_AGENT_ORIGIN_TLS=terminate`** (see
+[Environment variables]({{ '/reference/environment-variables/' | relative_url }})) — the tunnel's
+public front door is an SNI-routed TLS listener, and in Grün the client's TLS session reaches the
+Agent byte-for-byte, so the Agent terminates that TLS with the hostname's own ACME certificate and
+forwards the plaintext SSH stream to your local `sshd`. Nothing new is needed on the Edge. First
+issue the Grün certificate ([Go from Gelb to Grün]({{ '/how-to/gelb-to-gruen/' | relative_url }})),
+then set `CT_AGENT_ORIGIN_TLS=terminate` and point `CT_AGENT_ORIGIN` at your `sshd` (typically
+`127.0.0.1:22`).
+
 ## Origin key rotation
 
 ```bash
