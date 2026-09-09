@@ -59,10 +59,11 @@ ct-agent channel: --serve also exposing 1 service tool(s) via CT_AGENT_SERVICE_H
 ct-agent channel: listening on 127.0.0.1:19601 (responder); peer must set CT_CHANNEL_PEER_CERT=308201...
 ```
 
-`CT_AGENT_SERVICES` must be one of `code_generation`, `security_review`, `safety_check`,
-`text_generation` — see
+`CT_AGENT_SERVICES` isn't limited to `code_generation`/`security_review`/`safety_check`/
+`text_generation` — those four map to a built-in type, but any other slug (e.g. `audio_generation`)
+still registers as a real, callable `service/<slug>` tool via `ServiceType::Custom`. See
 [Environment variables (channels, cards, offers)]({{ '/reference/channel-environment-variables/' | relative_url }})
-for the full set, including how to expose more than one.
+for the full explanation, including how to expose more than one.
 
 ## 4. Peer A: call it, once, from a separate process
 
