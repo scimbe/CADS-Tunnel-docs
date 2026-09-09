@@ -113,6 +113,31 @@ Re-verified hermetically for this page, not assumed from an earlier pass:
 scraping/fetching all four routes over it, plus the private-state unit tests for `/status`,
 `/healthz`, and `/events`' clamping behavior.
 
+## Self-update (`ct-agent update`)
+
+`ct-agent update` (see [the CLI reference]({{ '/reference/cli/' | relative_url }})) checks GitHub
+Releases for a newer tag than the running binary's own `CARGO_PKG_VERSION` and, if one exists,
+downloads the matching platform asset and replaces itself in place. These variables control that
+path and its always-on auto-update mode; none are required for a one-shot manual `ct-agent update`.
+
+| Variable | Required | Default | Meaning |
+|---|---|---|---|
+| `CT_AGENT_AUTO_UPDATE` | No | unset (manual `ct-agent update` only) | Truthy (`1`/`true`) starts a background loop that checks for and applies updates automatically on `CT_AGENT_AUTO_UPDATE_INTERVAL_SECS`, instead of only updating when you run `ct-agent update` yourself. |
+| `CT_AGENT_AUTO_UPDATE_INTERVAL_SECS` | No | `86400` (24h) | How often the auto-update loop checks GitHub Releases. Only read when `CT_AGENT_AUTO_UPDATE` is on. |
+| `CT_AGENT_UPDATE_SKIP_VERIFY` | No | unset (verify) | Disables **only** the per-asset sha256 checksum check the update pipeline publishes next to every release asset — every use is logged loudly to stderr. For a private/unofficial build whose release has no `.sha256` file; never needed against the real hosted releases. |
+| `CT_AGENT_RELEASE_PUBKEY` | No | the public key(s) compiled into this build | Pins an Ed25519 public key an update's `release-manifest.json` + detached signature must verify against, for a private build using its own signing key instead of this project's compiled-in one. Hex-encoded. |
+
+<div class="callout">
+Every downloaded update is checked against its published sha256 **before** anything is written to
+disk (a mismatch, missing, or unparsable checksum all refuse the update) — bounded to a 60s
+whole-request timeout, 20s connect timeout, and a 256 MiB size cap, so a stalled or runaway
+transfer can never wedge the update or fill the disk. A per-asset checksum alone only proves the
+download wasn't corrupted in transit, not who published it — a separately signed
+`release-manifest.json` (verified against the pinned Ed25519 key above) additionally proves the
+release itself came from the expected signer, once a signing key exists for the release you're
+pulling from.
+</div>
+
 ## Reliability and connectivity fallbacks
 
 | Variable | Default | Meaning |
