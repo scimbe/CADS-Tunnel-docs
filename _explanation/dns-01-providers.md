@@ -36,7 +36,11 @@ through one of them.
   `POST /agent/dns01-challenge` (and `.../clear`) using its own routing token — the same token that
   already authorizes it to serve that hostname. The zone-wide credential (deSEC token or the
   self-hosted store) never leaves the operator's control plane; an agent can publish a challenge only
-  for a hostname it's already the authorized routing-token owner of.
+  for a hostname it's already the authorized routing-token owner of. `POST /agent/dns01-challenge`
+  legitimately blocks until the record has converged (up to ~300s) before responding — the agent's own
+  HTTP client has to be willing to wait at least that long, not just the platform's usual request
+  timeout ([CADS-Tunnel#809](https://github.com/scimbe/CADS-Tunnel/pull/809)/
+  [ct-agent#217](https://github.com/scimbe/ct-agent/issues/217)).
 
 ## Why three, not one
 

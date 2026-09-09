@@ -66,6 +66,17 @@ actually propagated to the public nameservers it queries. This is a timing issue
 error — retry the command; it doesn't cost you anything to redo (unlike onboarding, this isn't a
 single-use token).
 
+The control plane itself already waits for convergence before responding to `ct-agent`'s challenge
+call — up to five minutes in practice — so a run that takes noticeably longer than a normal
+certificate issuance but eventually reports `gruen` is expected, not a bug. If instead the command
+fails **quickly** (within ~10 seconds) with a connection/timeout error rather than actually hanging,
+that's a known agent-side client-timeout mismatch
+([CADS-Tunnel#809](https://github.com/scimbe/CADS-Tunnel/pull/809), fixed control-plane-side; tracked
+for the agent's own release in [ct-agent#217](https://github.com/scimbe/ct-agent/issues/217)) — retrying
+won't help in that specific case, since each attempt starts a fresh ACME order and can't accumulate
+propagation progress from the previous one. Check `ct-agent --version` against the fix's release notes
+once one ships.
+
 If it's not that — the command runs but never seems to get a CA to actually issue against — you may be
 waiting on the platform's [admission queue]({{ '/explanation/certificate-tiers/' | relative_url }}#the-gelbgrün-admission-queue)
 rather than anything on your end; check your tunnel's row in the portal to see whether you're queued,
